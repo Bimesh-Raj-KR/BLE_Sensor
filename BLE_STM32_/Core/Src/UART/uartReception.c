@@ -25,8 +25,8 @@ static uint8 ucIndex = 0;
 
 //***************************** Local Functions ********************************
 
-//********************************.setValue.************************************
-// Purpose : Function to share the address of UART Handles
+//****************************.receiverSetValue.********************************
+// Purpose : Function to share the address of UART Handle
 // Inputs  : None
 // Outputs : None
 // Return  : true if no error, else false
@@ -45,8 +45,8 @@ bool receiverSetValue(UART_HandleTypeDef *pstHuart1)
 	return blCheck;
 }
 
-//********************************.setValue.************************************
-// Purpose : Function to share the address of UART Handles
+//*****************************.getBufferValue.*********************************
+// Purpose : Function to share the address of received buffer
 // Inputs  : None
 // Outputs : None
 // Return  : true if no error, else false
@@ -66,8 +66,8 @@ bool getBufferValue(uint8 **ppucDataBuffer)
 	return blCheck;
 }
 
-//********************************.setValue.************************************
-// Purpose : Function to share the address of UART Handles
+//********************************.uartReceiveByte.*****************************
+// Purpose : Function to receive a single byte of data
 // Inputs  : None
 // Outputs : None
 // Return  : true if no error, else false
@@ -85,11 +85,11 @@ bool uartReceiveByte(void)
 	return blCheck;
 }
 
-//********************************.setValue.************************************
-// Purpose : Function to share the address of UART Handles
+//********************************.uartStoreData.*******************************
+// Purpose : Function to store the received data in a buffer
 // Inputs  : None
 // Outputs : None
-// Return  : true if no error, else false
+// Return  : None
 // Notes   : None
 //******************************************************************************
 void uartStoreData(void)
@@ -99,11 +99,11 @@ void uartStoreData(void)
 	ucTransmittedByte = 0;
 }
 
-//********************************.setValue.************************************
-// Purpose : Function to share the address of UART Handles
+//****************************.uartCheckReception.******************************
+// Purpose : Function to check if the full buffer was received
 // Inputs  : None
 // Outputs : None
-// Return  : true if no received data is terminator else false
+// Return  : true if full buffer was received else false
 // Notes   : None
 //******************************************************************************
 bool uartCheckReception(void)
@@ -122,9 +122,9 @@ bool uartCheckReception(void)
 	return blCheck;
 }
 
-//********************************.setValue.************************************
+//********************************.uartTransmit.********************************
 // Purpose : Function to share the address of UART Handles
-// Inputs  : None
+// Inputs  : pucDataBuffer - Data to be transmitted
 // Outputs : None
 // Return  : true if no error, else false
 // Notes   : None
