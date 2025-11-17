@@ -32,9 +32,9 @@ bool uartReceiveAndStore(void)
     bool blCheck = false;
     uint8 ucIterator = 0;
 
-    if (MAX_SIZE <= Serial2.available())
+    if (MIN_SIZE <= Serial2.available())
     {
-        while (MAX_SIZE > ucIterator)
+        while ((0 != Serial2.available()) && (MAX_SIZE > ucIterator))
         {
             uartReceiveByte();
             uartStoreData();
@@ -70,12 +70,10 @@ void uartClear(void)
 bool uartTransmit(uint8 *pucDataBuffer, uint8 ucSize)
 {
     bool blCheck = false;
-    uint8 ucTransmitBuffer[MAX_SIZE] = {0};
 
-    if (MAX_SIZE >= ucSize)
+    if (MAX_SIZE >= ucSize && (MIN_SIZE <= ucSize))
     {
-        memcpy(ucTransmitBuffer, pucDataBuffer, ucSize);
-        Serial2.write(ucTransmitBuffer, MAX_SIZE);
+        Serial2.write(pucDataBuffer, ucSize);
         blCheck = true;
     }
 

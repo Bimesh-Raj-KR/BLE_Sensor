@@ -97,8 +97,6 @@ bool uartCommunication(void)
         stData.pucData = NULL;
     }
 
-    uartClear();
-
     if (1 == ucDelayFlag)
     {
         delayProcess();

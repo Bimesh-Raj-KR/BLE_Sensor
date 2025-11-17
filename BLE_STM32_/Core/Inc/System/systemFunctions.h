@@ -24,7 +24,7 @@ typedef struct _DATA_PACKET_
     uint32 ulUid;
     uint16 unLength;
     uint8 *pucData;
-    uint16 unChecksum;
+    uint8 ucChecksum;
 }DATA_PACKET;
 #pragma pack(0)
 
@@ -34,11 +34,12 @@ typedef struct _DATA_PACKET_
 #define BAUD_RATE				(115200)
 #define TIM_COUNTER				(65535)
 #define MAX_RELOAD				(4095)
-#define DIVISOR					(1000)
+#define DELAY_BUFFER			(2000)
 #define RELOAD_COUNTER			(780)
-#define RELOAD_CONSTANT			(391)
+#define PRESCALER_VALUE			(256)
 #define MAX_SLEEP               (100)
 #define TIM_PRESCALER			(63)
+#define FREQUENCY				(40)
 #define WATCHDOG_WAIT			(5)
 #define PRIORITY				(5)
 

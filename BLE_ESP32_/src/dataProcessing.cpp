@@ -181,11 +181,6 @@ bool sendTimeoutResponse(void)
 		blCheck = true;
 	}
 
-	if (NULL != stTimeout.pucData)
-	{
-		free(stTimeout.pucData);
-	}
-
 	if (true != blCheck)
 	{
 		Serial.println("Failed to send Timeout response");

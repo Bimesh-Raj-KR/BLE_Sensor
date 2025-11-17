@@ -39,10 +39,10 @@ typedef enum
 #define TIMER_DELAY             (2000)
 #define REQUIRED_DELAY			(1500)
 #define MAX_BUFFER_SIZE			(40)
+#define TIMEOUT_DATA_SIZE		(13)
 #define SENSOR_DATA_SIZE		(12)
 #define DATA_OFFSET				(6)
 #define THREAD_WAIT				(5)
-#define TIMEOUT_DATA_SIZE		(4)
 #define MAX_SENSOR_DATA			(2)
 
 //***************************** Global Variables *******************************

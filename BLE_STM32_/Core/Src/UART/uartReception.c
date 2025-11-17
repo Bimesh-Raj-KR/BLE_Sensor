@@ -20,7 +20,6 @@
 static UART_HandleTypeDef *pstHuartOne = NULL;
 static uint8 ucTransmittedByte = 0;
 static uint8 ucReceivedBuffer[MAX_SIZE] = {0};
-static uint8 ucReceivedData[MAX_SIZE] = {0};
 static uint8 ucIndex = 0;
 
 //***************************** Local Functions ********************************
@@ -45,9 +44,33 @@ bool receiverSetValue(UART_HandleTypeDef *pstHuart1)
 	return blCheck;
 }
 
+//*********************************.getIndex.***********************************
+// Purpose : Function to get address of index
+// Inputs  : ppucIndex - Double pointer to share Index value
+// Outputs : None
+// Return  : true if no error, else false
+// Notes   : None
+//******************************************************************************
+bool getIndex(uint8 **ppucIndex)
+{
+	bool blCheck = false;
+
+	if (NULL != ppucIndex)
+	{
+		*ppucIndex = &ucIndex;
+
+		if (NULL != *ppucIndex)
+		{
+			blCheck = true;
+		}
+	}
+
+	return blCheck;
+}
+
 //*****************************.getBufferValue.*********************************
 // Purpose : Function to share the address of received buffer
-// Inputs  : None
+// Inputs  : ppucDataBuffer - Double pointer to address of Data Buffer
 // Outputs : None
 // Return  : true if no error, else false
 // Notes   : None
@@ -56,7 +79,7 @@ bool getBufferValue(uint8 **ppucDataBuffer)
 {
 	bool blCheck = false;
 
-	*ppucDataBuffer = ucReceivedData;
+	*ppucDataBuffer = ucReceivedBuffer;
 
 	if (NULL != *ppucDataBuffer)
 	{
@@ -65,7 +88,6 @@ bool getBufferValue(uint8 **ppucDataBuffer)
 
 	return blCheck;
 }
-
 //********************************.uartReceiveByte.*****************************
 // Purpose : Function to receive a single byte of data
 // Inputs  : None
@@ -110,16 +132,30 @@ bool uartCheckReception(void)
 {
 	bool blCheck = false;
 
-	if (MAX_SIZE == ucIndex)
+	if (MIN_SIZE == ucIndex)
 	{
-		memset(ucReceivedData, 0, MAX_SIZE);
-		memcpy(ucReceivedData, ucReceivedBuffer, MAX_SIZE);
-		memset(ucReceivedBuffer, 0, MAX_SIZE);
-		ucIndex = 0;
 		blCheck = true;
 	}
 
+	if (MAX_SIZE < ucIndex)
+	{
+		printf("Buffer overflow\r\n");
+	}
+
 	return blCheck;
+}
+
+//**********************************.uartClear.*********************************
+// Purpose : Function to clear the data buffer for next reception
+// Inputs  : None
+// Outputs : None
+// Return  : None
+// Notes   : None
+//******************************************************************************
+void uartClear(void)
+{
+	memset(ucReceivedBuffer, 0, MAX_SIZE);
+	ucIndex = 0;
 }
 
 //********************************.uartTransmit.********************************

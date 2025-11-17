@@ -134,7 +134,7 @@ bool dataBuildPacket(DATA_PACKET *pstData, uint8 ucCmdType, uint8 ucCmd,
 
 	if ((0 < unLength) && (NULL == pucTlvBuffer))
 	{
-		printf("TLV data mismatch\r\n");
+		printf("TLV data mismatch");
 	}
 	else
 	{
@@ -144,7 +144,7 @@ bool dataBuildPacket(DATA_PACKET *pstData, uint8 ucCmdType, uint8 ucCmd,
 			pstData->ucCmd = ucCmd;
 			pstData->ulUid = ulUid;
 			pstData->unLength = unLength;
-			pstData->unChecksum = ucCmdType + ucCmd + ulUid + unLength;
+			pstData->ucChecksum = ucCmdType + ucCmd + ulUid + unLength;
 
 			if (0 < unLength)
 			{
@@ -162,7 +162,7 @@ bool dataBuildPacket(DATA_PACKET *pstData, uint8 ucCmdType, uint8 ucCmd,
 
 				for (ucIterator = 0; ucIterator < unLength; ucIterator ++)
 				{
-					pstData->unChecksum += pucTlvBuffer[ucIterator];
+					pstData->ucChecksum += pucTlvBuffer[ucIterator];
 				}
 			}
 
@@ -176,7 +176,7 @@ bool dataBuildPacket(DATA_PACKET *pstData, uint8 ucCmdType, uint8 ucCmd,
 
 	if (true != blCheck)
 	{
-		perror("Failed to build TLV packet");
+		printf("Failed to build TLV packet");
 	}
 
     return blCheck;
@@ -229,13 +229,12 @@ bool dataBuilder(uint8 *pucBuffer, DATA_PACKET stData, uint8 ucSize)
 {
 	bool blCheck = false;
 
-	if ((NULL != pucBuffer) && (9 <= ucSize))
+	if ((NULL != pucBuffer) && (MIN_BUFFER_SIZE <= ucSize))
 	{
 		pucBuffer[BUFFER_CMD_TYPE] = stData.ucCmdType;
 		pucBuffer[BUFFER_CMD] = stData.ucCmd;
 		memcpy(&pucBuffer[BUFFER_UID], &stData.ulUid, sizeof(uint32));
 		memcpy(&pucBuffer[BUFFER_LENGTH], &stData.unLength, sizeof(uint16));
-		memcpy(&pucBuffer[BUFFER_CHECKSUM], &stData.unChecksum, sizeof(uint16));
 
 		if ((0 < stData.unLength) && (NULL != stData.pucData) &&
 			(BUFFER_DATA + stData.unLength <= ucSize))
@@ -243,11 +242,19 @@ bool dataBuilder(uint8 *pucBuffer, DATA_PACKET stData, uint8 ucSize)
 			memcpy(&pucBuffer[BUFFER_DATA], stData.pucData, stData.unLength);
 		}
 
+		pucBuffer[BUFFER_DATA + stData.unLength] = stData.ucChecksum;
+
+		if (NULL != stData.pucData)
+		{
+			free(stData.pucData);
+			stData.pucData = NULL;
+		}
+
 		blCheck = true;
 	}
 	else
 	{
-		printf("Failed to build data for transmission\r\n");
+		printf("Failed to build data for transmission");
 	}
 
 	return blCheck;
@@ -260,37 +267,36 @@ bool dataBuilder(uint8 *pucBuffer, DATA_PACKET stData, uint8 ucSize)
 // Return  : true if no error, else false
 // Notes   : None
 //******************************************************************************
-bool dataParser(DATA_PACKET *pstData, uint8 ucSize)
+bool dataParser(DATA_PACKET *pstData)
 {
 	bool blCheck = false;
 
-	if ((NULL != pucReceiverBuffer) && (NULL != pstData))
+	if (NULL != pstData)
 	{
 		pstData->ucCmdType = pucReceiverBuffer[BUFFER_CMD_TYPE];
 		pstData->ucCmd = pucReceiverBuffer[BUFFER_CMD];
 		memcpy(&pstData->ulUid, &pucReceiverBuffer[BUFFER_UID], sizeof(uint32));
-		memcpy(&pstData->unLength, &pucReceiverBuffer[BUFFER_LENGTH],
-				sizeof(uint16));
-		memcpy(&pstData->unChecksum, &pucReceiverBuffer[BUFFER_CHECKSUM],
-						sizeof(uint16));
+		memcpy(&pstData->unLength, &pucReceiverBuffer[BUFFER_LENGTH], sizeof(uint16));
 
 		if ((0 < pstData->unLength) && (NULL == pstData->pucData) &&
-				(MIN_BUFFER_SIZE + pstData->unLength <= ucSize))
+				(MIN_BUFFER_SIZE + pstData->unLength <= MAX_SIZE))
 		{
-			pstData->pucData = malloc(pstData->unLength);
+			pstData->pucData = (uint8*)malloc(pstData->unLength);
 
 			if (NULL != pstData->pucData)
 			{
 				memcpy(pstData->pucData, &pucReceiverBuffer[BUFFER_DATA],
-						pstData->unLength);
+					pstData->unLength);
 			}
 		}
 
+		pstData->ucChecksum = pucReceiverBuffer[BUFFER_DATA + pstData->unLength];
+		uartClear();
 		blCheck = true;
 	}
 	else
 	{
-		printf("Unable to parse received data\r\n");
+		printf("Unable to parse received data");
 	}
 
 	return blCheck;
@@ -307,19 +313,19 @@ bool dataVerifyChecksum(DATA_PACKET stData)
 {
 	bool blCheck = false;
 	uint8 ucIterator = 0;
-	uint32 ulSum = 0;
+	uint8 ucSum = 0;
 
-	ulSum = stData.ucCmdType + stData.ucCmd + stData.ulUid + stData.unLength;
+	ucSum = stData.ucCmdType + stData.ucCmd + stData.ulUid + stData.unLength;
 
 	if ((0 < stData.unLength) && (NULL != stData.pucData))
 	{
 		for (ucIterator = 0; ucIterator < stData.unLength; ucIterator ++)
 		{
-			ulSum += stData.pucData[ucIterator];
+			ucSum += stData.pucData[ucIterator];
 		}
 	}
 
-	if (ulSum == stData.unChecksum)
+	if (ucSum == stData.ucChecksum)
 	{
 		blCheck = true;
 	}
@@ -330,3 +336,5 @@ bool dataVerifyChecksum(DATA_PACKET stData)
 
 	return blCheck;
 }
+
+// EOF

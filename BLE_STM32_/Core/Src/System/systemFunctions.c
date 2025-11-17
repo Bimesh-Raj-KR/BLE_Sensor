@@ -159,7 +159,7 @@ bool changeWatchdog(IWDG_HandleTypeDef *pstHiwdg, uint16 unDelay)
 
 	if (NULL != pstHiwdg)
 	{
-		unReload = ((unDelay * RELOAD_CONSTANT)/DIVISOR) - 1;
+		unReload = ((unDelay + DELAY_BUFFER) * FREQUENCY) / PRESCALER_VALUE - 1;
 
 		if (MAX_RELOAD > unReload)
 		{

@@ -83,7 +83,7 @@ bool dataBuildPacket(DATA_PACKET *pstData, uint8 ucCmdType, uint8 ucCmd,
 			pstData->ucCmd = ucCmd;
 			pstData->ulUid = ulUid;
 			pstData->unLength = unLength;
-			pstData->unChecksum = ucCmdType + ucCmd + ulUid + unLength;
+			pstData->ucChecksum = ucCmdType + ucCmd + ulUid + unLength;
 
 			if (0 < unLength)
 			{
@@ -101,7 +101,7 @@ bool dataBuildPacket(DATA_PACKET *pstData, uint8 ucCmdType, uint8 ucCmd,
 
 				for (ucIterator = 0; ucIterator < unLength; ucIterator ++)
 				{
-					pstData->unChecksum += pucTlvBuffer[ucIterator];
+					pstData->ucChecksum += pucTlvBuffer[ucIterator];
 				}
 			}
 
@@ -174,12 +174,19 @@ bool dataBuilder(uint8 *pucBuffer, DATA_PACKET stData, uint8 ucSize)
 		pucBuffer[BUFFER_CMD] = stData.ucCmd;
 		memcpy(&pucBuffer[BUFFER_UID], &stData.ulUid, sizeof(uint32));
 		memcpy(&pucBuffer[BUFFER_LENGTH], &stData.unLength, sizeof(uint16));
-		memcpy(&pucBuffer[BUFFER_CHECKSUM], &stData.unChecksum, sizeof(uint16));
 
 		if ((0 < stData.unLength) && (NULL != stData.pucData) &&
 			(BUFFER_DATA + stData.unLength <= ucSize))
 		{
 			memcpy(&pucBuffer[BUFFER_DATA], stData.pucData, stData.unLength);
+		}
+ 
+		pucBuffer[BUFFER_DATA + stData.unLength] = stData.ucChecksum;
+
+		if (NULL != stData.pucData)
+		{
+			free(stData.pucData);
+			stData.pucData = NULL;
 		}
 
 		blCheck = true;
@@ -212,8 +219,6 @@ bool dataParser(DATA_PACKET *pstData)
 		pstData->ucCmd = pucBuffer[BUFFER_CMD];
 		memcpy(&pstData->ulUid, &pucBuffer[BUFFER_UID], sizeof(uint32));
 		memcpy(&pstData->unLength, &pucBuffer[BUFFER_LENGTH], sizeof(uint16));
-		memcpy(&pstData->unChecksum, &pucBuffer[BUFFER_CHECKSUM], 
-			sizeof(uint16));
 
 		if ((0 < pstData->unLength) && (NULL == pstData->pucData) &&
 				(MIN_BUFFER_SIZE + pstData->unLength <= MAX_SIZE))
@@ -227,6 +232,8 @@ bool dataParser(DATA_PACKET *pstData)
 			}
 		}
 
+		pstData->ucChecksum = pucBuffer[BUFFER_DATA + pstData->unLength];
+		uartClear();
 		blCheck = true;
 	}
 	else
@@ -248,19 +255,19 @@ bool dataVerifyChecksum(DATA_PACKET stData)
 {
 	bool blCheck = false;
 	uint8 ucIterator = 0;
-	uint32 ulSum = 0;
+	uint8 ucSum = 0;
 
-	ulSum = stData.ucCmdType + stData.ucCmd + stData.ulUid + stData.unLength;
+	ucSum = stData.ucCmdType + stData.ucCmd + stData.ulUid + stData.unLength;
 
 	if ((0 < stData.unLength) && (NULL != stData.pucData))
 	{
 		for (ucIterator = 0; ucIterator < stData.unLength; ucIterator ++)
 		{
-			ulSum += stData.pucData[ucIterator];
+			ucSum += stData.pucData[ucIterator];
 		}
 	}
 
-	if (ulSum == stData.unChecksum)
+	if (ucSum == stData.ucChecksum)
 	{
 		blCheck = true;
 	}

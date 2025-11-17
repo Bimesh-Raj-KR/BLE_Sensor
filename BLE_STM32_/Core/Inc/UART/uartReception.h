@@ -18,14 +18,17 @@
 
 //***************************** Global Constants *******************************
 #define MAX_SIZE 				(128)
+#define MIN_SIZE 				(9)
 #define MAX_WAIT				(20)
 
 //***************************** Global Variables *******************************
 bool receiverSetValue(UART_HandleTypeDef *pstHuart1);
+bool getIndex(uint8 **ppucIndex);
 bool getBufferValue(uint8 **ppucDataBuffer);
 bool uartReceiveByte(void);
 void uartStoreData(void);
 bool uartCheckReception(void);
+void uartClear(void);
 bool uartTransmit(uint8 *pucDataBuffer, uint8 ucSize);
 
 //**************************** Forward Declarations ****************************

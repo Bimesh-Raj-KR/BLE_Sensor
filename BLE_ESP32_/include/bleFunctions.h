@@ -48,7 +48,7 @@ typedef struct _IEEE_FORMAT_
 #define MAX_HEX                 (0xFF)
 #define DEFAULT_DELAY           (2000)
 #define MIN_DELAY               (300)
-#define MAX_DELAY               (10000)
+#define MAX_DELAY               (24000)
 #define SERVICE_UUID 			"76189799-6010-4043-99af-79d4ae6ea773"
 #define TIMEOUT_UUID			"81e7dbec-e65a-4990-aeed-af4914868a2d"
 

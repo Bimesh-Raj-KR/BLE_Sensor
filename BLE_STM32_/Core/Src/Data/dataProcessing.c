@@ -28,6 +28,8 @@ static uint16 unTimeout = TIMER_DELAY;
 static bool readSensorData(BLE_SENSOR *pstReadings);
 static bool sendSensorData(DATA_PACKET *pstTelemetry, uint32 *pulReadings);
 static bool getTimeout(DATA_PACKET *pstTimeout);
+static bool waitforData(void);
+
 
 //*****************************.dataSetValue.************************************
 // Purpose : Function to set value of global variables
@@ -95,7 +97,7 @@ bool receivePingResponse(DATA_PACKET *pstPing)
 	if (NULL != pstPing)
 	{
 		// Parses data
-		dataParser(pstPing, MIN_BUFFER_SIZE);
+		dataParser(pstPing);
 
 		if ((CMD_RESP == pstPing->ucCmdType) && (CMD_PING == pstPing->ucCmd)
 			&& (true == dataVerifyChecksum(*pstPing)))
@@ -128,7 +130,7 @@ bool receiveTelemetryRequest(DATA_PACKET *pstTelemetry)
 	if (NULL != pstTelemetry)
 	{
 		// Parses data
-		dataParser(pstTelemetry, MIN_BUFFER_SIZE);
+		dataParser(pstTelemetry);
 
 		if ((CMD_REQ == pstTelemetry->ucCmdType) &&
 				(CMD_TELM == pstTelemetry->ucCmd) &&
@@ -184,11 +186,6 @@ bool sendTelemetryResponse(DATA_PACKET *pstTelemetry)
 		printf("Failed to send telemetry response\r\n");
 	}
 
-	if (NULL != pstTelemetry->pucData)
-	{
-		free(pstTelemetry->pucData);
-	}
-
 	return blCheck;
 
 }
@@ -235,50 +232,32 @@ static bool sendSensorData(DATA_PACKET *pstTelemetry, uint32 *pulReadings)
 {
 	bool blCheck = false;
 	uint8 ucIterator = 0;
-	uint8 *pucTlvData = NULL;
+	uint8 ucTlvData[SENSOR_DATA_SIZE] = {0};
 	uint8 ucTransmitBuffer[MIN_BUFFER_SIZE + SENSOR_DATA_SIZE] = {0};
 	uint16 unOffset = 0;
 	uint8 ucType[MAX_SENSOR_DATA] = {TYPE_TEMP, TYPE_HUMD};
 
 	if ((NULL != pstTelemetry) && (NULL != pulReadings))
 	{
-		// allocate memory
-		pucTlvData = malloc(SENSOR_DATA_SIZE);
-
-		if (NULL != pucTlvData)
+		// convert data to TLV format
+		for (ucIterator = 0; ucIterator < MAX_SENSOR_DATA; ucIterator ++)
 		{
-			// convert data to TLV format
-			for (ucIterator = 0; ucIterator < MAX_SENSOR_DATA; ucIterator ++)
-			{
-				unOffset = ucIterator * DATA_OFFSET;
-				dataTlv(pulReadings[ucIterator], pucTlvData + unOffset,
-						ucType[ucIterator], sizeof(uint32));
-			}
-
-			// build data for transmission
-			dataBuildPacket(pstTelemetry, CMD_RESP, CMD_TELM,
-					 ulCurrentUid, SENSOR_DATA_SIZE, pucTlvData);
-			dataBuilder(ucTransmitBuffer, *pstTelemetry,
-					MIN_BUFFER_SIZE + SENSOR_DATA_SIZE);
-
-			// transmit data packet
-			uartTransmit(ucTransmitBuffer, MIN_BUFFER_SIZE + SENSOR_DATA_SIZE);
-
-			blCheck = true;
+			unOffset = ucIterator * DATA_OFFSET;
+			dataTlv(pulReadings[ucIterator], ucTlvData + unOffset,
+					ucType[ucIterator], sizeof(uint32));
 		}
-		else
-		{
-			perror("NULL check failed");
-		}
-	}
 
-	// free memory
-	if (NULL != pucTlvData)
-	{
-		free(pucTlvData);
-	}
+		// build data for transmission
+		dataBuildPacket(pstTelemetry, CMD_RESP, CMD_TELM,
+				 ulCurrentUid, SENSOR_DATA_SIZE, ucTlvData);
+		dataBuilder(ucTransmitBuffer, *pstTelemetry,
+				MIN_BUFFER_SIZE + SENSOR_DATA_SIZE);
 
-	if (true != blCheck)
+		// transmit data packet
+		uartTransmit(ucTransmitBuffer, MIN_BUFFER_SIZE + SENSOR_DATA_SIZE);
+		blCheck = true;
+	}
+	else
 	{
 		printf("Failed to send Sensor data\r\n");
 	}
@@ -330,8 +309,10 @@ bool receiveTimeoutResponse(DATA_PACKET *pstTimeout)
 
 	if (NULL != pstTimeout)
 	{
+		waitforData();
+
 		// Parses data
-		dataParser(pstTimeout, MIN_BUFFER_SIZE + TIMEOUT_DATA_SIZE);
+		dataParser(pstTimeout);
 
 		if ((CMD_RESP == pstTimeout->ucCmdType) &&
 				(CMD_TIME == pstTimeout->ucCmd) &&
@@ -342,11 +323,6 @@ bool receiveTimeoutResponse(DATA_PACKET *pstTimeout)
 			getTimeout(pstTimeout);
 			blCheck = true;
 		}
-	}
-
-	if (NULL != pstTimeout->pucData)
-	{
-		free(pstTimeout->pucData);
 	}
 
 	if (true != blCheck)
@@ -371,7 +347,11 @@ static bool getTimeout(DATA_PACKET *pstTimeout)
 
 	if (NULL != pstTimeout)
 	{
-		dataExtract(&unDelay, &ucType, pstTimeout->pucData);
+		if (NULL != pstTimeout->pucData)
+		{
+			dataExtract(&unDelay, &ucType, pstTimeout->pucData);
+			free(pstTimeout->pucData);
+		}
 
 		if (TYPE_TIME == ucType)
 		{
@@ -419,6 +399,31 @@ bool delayProcess(void)
 	}
 
 	ulCurrentUid ++;
+
+	return blCheck;
+}
+
+//******************************.waitforData.***********************************
+// Purpose : Function to wait until full data arrives
+// Inputs  : None
+// Outputs : None
+// Return  : true if no error, else false
+// Notes   : None
+//******************************************************************************
+static bool waitforData(void)
+{
+	bool blCheck = false;
+
+	uint8 *pucIndex = NULL;
+	if (true == getIndex(&pucIndex))
+	{
+		while (TIMEOUT_DATA_SIZE != *pucIndex)
+		{
+			// Loop until data limit is reached
+		}
+
+		blCheck = true;
+	}
 
 	return blCheck;
 }

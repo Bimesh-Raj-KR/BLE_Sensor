@@ -29,8 +29,7 @@ typedef enum
 	BUFFER_CMD = 1,
 	BUFFER_UID = 2,
 	BUFFER_LENGTH = 6,
-	BUFFER_CHECKSUM = 8,
-	BUFFER_DATA = 10
+	BUFFER_DATA = 8
 }BUFFER_VARIABLES;
 
 #pragma pack(1)
@@ -41,12 +40,12 @@ typedef struct _DATA_PACKET_
     uint32 ulUid;
     uint16 unLength;
     uint8 *pucData;
-    uint16 unChecksum;
+    uint8 ucChecksum;
 }DATA_PACKET;
 #pragma pack(0)
 
 //***************************** Global Constants *******************************
-#define MIN_BUFFER_SIZE			(10)
+#define MIN_BUFFER_SIZE			(9)
 
 //***************************** Global Variables *******************************
 bool dataTlv(size_t ulData, uint8 *ucTlvBuffer,

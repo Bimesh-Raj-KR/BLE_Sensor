@@ -439,7 +439,7 @@ bool bleGetDelay(uint16 *punValue)
 
     if (NULL != punValue)
     {
-        if ((MAX_DELAY > unDelay) && (MIN_DELAY < unDelay))
+        if ((MAX_DELAY >= unDelay) && (MIN_DELAY <= unDelay))
         {
             *punValue = unDelay;
         }
