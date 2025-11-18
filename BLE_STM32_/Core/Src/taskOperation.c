@@ -39,6 +39,7 @@ void taskSync(void *pArgument)
 		processPing();
 		processTelemetry();
 		processTimeout();
+		processVersion();
 		delayProcess();
 	}
 }

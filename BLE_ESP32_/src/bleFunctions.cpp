@@ -158,12 +158,57 @@ bool bleCharacteristics(BLECharacteristic **ppCharacteristics,
     return blCheck;
 }
 
-//**************************.bleCharacteristics.********************************
-// Purpose : Function to create a BLE characteristics and set its 
+//**********************.bleStringCharacteristics.******************************
+// Purpose : Function to create a BLE string characteristics and set its 
 //           properties and descriptor
 // Inputs  : ppCharacteristics - Characteristics handle
 //           ppService - Service Handle
-//           unUuid - UUID of the Characteristics
+// Outputs : None
+// Return  : true if no error, else false
+// Notes   : None
+//******************************************************************************
+bool bleStringCharacteristics(BLECharacteristic **ppCharacteristics, 
+                        BLEService **ppService)
+{
+    bool blCheck = false;
+
+    if ((NULL != *ppService) && (NULL != ppCharacteristics))
+    {
+        *ppCharacteristics = (*ppService)->createCharacteristic(VERSION_UUID, 
+        BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+        (*ppCharacteristics)->addDescriptor(new BLE2902());
+
+        BLE2904 *pPresentationFormat = new BLE2904();
+
+        if (NULL != pPresentationFormat)
+        {
+            pPresentationFormat->setFormat(BLE2904::FORMAT_UTF8);
+            (*ppCharacteristics)->addDescriptor(pPresentationFormat);
+        }
+
+        if (NULL != *ppCharacteristics)
+        {
+            blCheck = true;
+        }
+    }
+    else
+    {
+        Serial.println("NULL check failed");
+    }
+
+    if (true != blCheck)
+    {
+        Serial.println("Failed to create BLE string characteristics");
+    }
+
+    return blCheck;
+}
+
+//***********************.bleWriteCharacteristics.******************************
+// Purpose : Function to create a BLE characteristics and set write
+//           property and descriptor
+// Inputs  : ppCharacteristics - Characteristics handle
+//           ppService - Service Handle
 // Outputs : None
 // Return  : true if no error, else false
 // Notes   : None
@@ -198,7 +243,7 @@ bool bleWriteCharacteristics(BLECharacteristic **ppCharacteristics,
     return blCheck;
 }
 
-//**************************.bleCharacteristics.********************************
+//*******************************.bleCallback.**********************************
 // Purpose : Function to assign the class DeviceCallback as the callback handler 
 //           for the characteristics
 // Inputs  : ppCharacteristics - Characteristics handle
@@ -332,7 +377,7 @@ bool bleStartAdvertising(BLEAdvertising **ppAdvertising)
 // Purpose : Function to set value of the BLE transmission
 // Inputs  : ppCharacteristics - Characteristics Handle
 //`          ulValue - The characteristics value to be transmitted
-//           blFlag - Flag for distinguishing temperature and humidity readings
+//           ucFlag - Flag for distinguishing temperature and humidity readings
 // Outputs : None
 // Return  : true if no error, else false
 // Notes   : None
@@ -347,11 +392,7 @@ bool bleValueSet(BLECharacteristic **ppCharacteristics, uint32 ulValue,
     {
         if (0 == ucFlag)
         {
-            if (true != bleTempMeasure(&stFormattedTemp, ulValue))
-            {
-                Serial.println("Unable to encode temperature reading");
-            }
-
+            bleTempMeasure(&stFormattedTemp, ulValue);
             (*ppCharacteristics)->setValue((uint8 *)&stFormattedTemp, 
                                             MAX_LENGTH);
         }
@@ -365,6 +406,37 @@ bool bleValueSet(BLECharacteristic **ppCharacteristics, uint32 ulValue,
     else
     {
         Serial.println("Failed to set value to be transmitted");
+    }
+
+    return blCheck;
+}
+
+//*****************************.bleStringSet.***********************************
+// Purpose : Function to set string value of the BLE transmission
+// Inputs  : ppCharacteristics - Characteristics Handle
+//`          pucBuffer - The characteristics string to be transmitted
+//           unLength - Length of the string
+// Outputs : None
+// Return  : true if no error, else false
+// Notes   : None
+//******************************************************************************
+bool bleStringSet(BLECharacteristic **ppCharacteristics, uint8 *pucBuffer, 
+                        uint16 unLength)
+{
+    bool blCheck = false;
+
+    if (NULL != *ppCharacteristics)
+    {
+        if (0 != unLength)
+        {
+            (*ppCharacteristics)->setValue(pucBuffer, unLength);
+        }
+
+        blCheck = true;
+    }
+    else
+    {
+        Serial.println("Failed to set string to be transmitted");
     }
 
     return blCheck;
@@ -460,3 +532,5 @@ bool bleGetDelay(uint16 *punValue)
 
     return blCheck;
 }
+
+// EOF

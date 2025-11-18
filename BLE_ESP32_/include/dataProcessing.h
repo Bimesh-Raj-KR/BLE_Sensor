@@ -25,7 +25,8 @@ typedef enum
 {
 	CMD_PING = 0x00,
 	CMD_TELM = 0x01,
-	CMD_TIME = 0x02
+	CMD_TIME = 0x02,
+	CMD_VERS = 0x03
 }CMD_NAMES;
 
 //***************************** Global Constants *******************************
@@ -43,6 +44,8 @@ bool sendPingResponse(void);
 bool sendTelemetryRequest(void);
 bool processTelemetryResponse(void);
 bool sendTimeoutResponse(void);
+bool sendVersionRequest(void);
+bool processVersionResponse(void);
 bool delayProcess(void);
 
 //*********************** Inline Method Implementations ************************

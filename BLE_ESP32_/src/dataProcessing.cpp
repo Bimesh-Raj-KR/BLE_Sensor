@@ -22,7 +22,8 @@ static uint32 ulCurrentUid = 0;
 static uint16 unDelay = DEFAULT_DELAY;
 
 //***************************** Local Functions ********************************
-static bool sendOverBle(DATA_PACKET *pstTelemetry);
+static bool sendSensorOverBle(DATA_PACKET *pstTelemetry);
+static bool sendVersionOverBle(DATA_PACKET *pstVersion);
 
 //*******************************.setValue.*************************************
 // Purpose : Function to set value of received Data packet
@@ -135,7 +136,7 @@ bool processTelemetryResponse(void)
 	{
 		if (NULL != pstData->pucData)
 		{
-			sendOverBle(pstData);
+			sendSensorOverBle(pstData);
 			blCheck = true;
 		}
 	}
@@ -165,7 +166,7 @@ bool sendTimeoutResponse(void)
 	bleGetDelay(&unDelay);
 
 	// build data for transmission
-	dataTlv(unDelay, ucTlvData, TYPE_TIME, sizeof(uint16));
+	dataTlv((uint8*)&unDelay, ucTlvData, TYPE_TIME, sizeof(uint16));
 	dataBuildPacket(&stTimeout, CMD_RESP, CMD_TIME, 
 					ulCurrentUid, TIMEOUT_DATA_SIZE, ucTlvData);
 	dataBuilder(ucTransmitBuffer, stTimeout, MIN_BUFFER_SIZE +
@@ -189,6 +190,65 @@ bool sendTimeoutResponse(void)
 	return blCheck;
 }
 
+//*************************.sendVersionRequest.*********************************
+// Purpose : Function to send version request
+// Inputs  : None
+// Outputs : None
+// Return  : true if no error else false
+// Notes   : None
+//******************************************************************************
+bool sendVersionRequest(void)
+{
+	bool blCheck = false;
+	DATA_PACKET stVersion = {0};
+	uint8 ucTelemetryBuffer[MIN_BUFFER_SIZE] = {0};
+
+	// build data for transmission
+	dataBuildPacket(&stVersion, CMD_REQ, CMD_VERS, ulCurrentUid, 0, NULL);
+
+	if (true == dataBuilder(ucTelemetryBuffer, stVersion, MIN_BUFFER_SIZE))
+	{
+		// transmit data packet
+		uartTransmit(ucTelemetryBuffer, MIN_BUFFER_SIZE);
+		blCheck = true;
+	}
+
+	if (true != blCheck)
+	{
+		Serial.println("Failed to send Version request");
+	}
+
+	return blCheck;
+}
+
+//***************************.processVersionResponse.***************************
+// Purpose : Function to send process version response
+// Inputs  : None
+// Outputs : None
+// Return  : true if no error else false
+// Notes   : None
+//******************************************************************************
+bool processVersionResponse(void)
+{
+	bool blCheck = false;
+
+	if (NULL != pstData)
+	{
+		if (NULL != pstData->pucData)
+		{
+			sendVersionOverBle(pstData);
+			blCheck = true;
+		}
+	}
+
+	if (true != blCheck)
+	{
+		Serial.println("Failed to receive Telemetry response");
+	}
+
+	return blCheck;
+}
+
 //******************************.delayProcess.**********************************
 // Purpose : Function to delay the process
 // Inputs  : None
@@ -202,6 +262,8 @@ bool delayProcess(void)
 
 	if (0 != unDelay)
 	{
+		Serial.printf("[%d]", ulCurrentUid);
+		Serial.println("Delaying process");
 		uartDelay(unDelay);
 		blCheck = true;
 	}
@@ -213,14 +275,14 @@ bool delayProcess(void)
 	return blCheck;
 }
 
-//******************************.sendOverBle.***********************************
+//***************************.sendSensorOverBle.********************************
 // Purpose : Function to send sensor readings over BLE
-// Inputs  : None
+// Inputs  : pstTelemetry - Telemetry data packet
 // Outputs : None
-// Return  : None
+// Return  : true if no error else false
 // Notes   : None
 //******************************************************************************
-static bool sendOverBle(DATA_PACKET *pstTelemetry)
+static bool sendSensorOverBle(DATA_PACKET *pstTelemetry)
 {
 	bool blCheck = false;
 	uint8 ucIterator = 0;
@@ -230,13 +292,13 @@ static bool sendOverBle(DATA_PACKET *pstTelemetry)
 
 	if ((CMD_RESP == pstTelemetry->ucCmdType))
 	{
-		Serial.printf("[%d] ", ulCurrentUid);
-		Serial.println("Sensor Readings received succesfully");
+		Serial.printf("[%d]", ulCurrentUid);
+		Serial.println("Sensor Readings received successfully");
 
 		for (ucIterator = 0; ucIterator < MAX_DATA; ucIterator ++)
 		{
 			unOffset = ucIterator * DATA_OFFSET;
-			dataExtract(&ulReadings[ucIterator], &ucType[ucIterator], 
+			dataExtract((uint8*)&ulReadings[ucIterator], &ucType[ucIterator], 
 						pstTelemetry->pucData + unOffset);
 		}
 
@@ -245,7 +307,40 @@ static bool sendOverBle(DATA_PACKET *pstTelemetry)
 	}
 	else
 	{
-		Serial.println("Failed to send data over BLE");
+		Serial.println("Failed to send sensor data over BLE");
+	}
+
+	return blCheck;
+}
+
+//***************************.sendVersionOverBle.*******************************
+// Purpose : Function to send version details over BLE
+// Inputs  : pstVersion - version data packet
+// Outputs : None
+// Return  : true if no error else false
+// Notes   : None
+//******************************************************************************
+static bool sendVersionOverBle(DATA_PACKET *pstVersion)
+{
+	bool blCheck = false;
+	uint8 ucIterator = 0;
+	uint8 ucType = 0;
+	uint16 unOffset = 0;
+	uint8 ucVersion[VERSION_SIZE] = {0};
+
+	if ((CMD_RESP == pstVersion->ucCmdType))
+	{
+		Serial.printf("[%d]", ulCurrentUid);
+		Serial.println("STM32 version received successfully");
+
+		// Extract version
+		dataExtract(ucVersion, &ucType, pstVersion->pucData);
+		bleStringTransmit(ucVersion, ucType);
+		blCheck = true;
+	}
+	else
+	{
+		Serial.println("Failed to send IDE version over BLE");
 	}
 
 	return blCheck;

@@ -22,9 +22,10 @@
 //***************************** Global Variables *******************************
 
 //**************************** Forward Declarations ****************************
-bool processPing();
-bool processTelemetry();
-bool processTimeout();
+bool processPing(void);
+bool processTelemetry(void);
+bool processTimeout(void);
+bool processVersion(void);
 
 //*********************** Inline Method Implementations ************************
 

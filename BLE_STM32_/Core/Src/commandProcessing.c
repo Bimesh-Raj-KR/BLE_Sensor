@@ -140,4 +140,36 @@ bool processTimeout(void)
 	return blCheck;
 }
 
+//*******************************.processVersion.*******************************
+// Purpose : Function to process version command
+// Inputs  : None
+// Outputs : None
+// Return  : true if no error, else false
+// Notes   : None
+//******************************************************************************
+bool processVersion(void)
+{
+	bool blCheck = false;
+	DATA_PACKET stVersion = {0};
+
+	semaphoreWait(pReceiverHandle);
+
+	if (true == receiveVersionRequest(&stVersion))
+	{
+		if (true == sendVersionResponse(&stVersion))
+		{
+			blCheck = true;
+		}
+	}
+
+	milliDelay(MAX_SLEEP);
+
+	if (true != blCheck)
+	{
+		printf("Failed to process version\r\n");
+	}
+
+	return blCheck;
+}
+
 //EOF

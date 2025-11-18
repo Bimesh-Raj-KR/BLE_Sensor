@@ -83,16 +83,43 @@ bool processTelemetry(void)
 bool processTimeout(void)
 {
 	bool blCheck = false;
-	DATA_PACKET stTimeout = {0};
 
 	if (true == sendTimeoutResponse())
+	{
+		uartDelay(MAX_SLEEP);
+
+		if (true == sendVersionRequest())
+		{
+			blCheck = true;
+		}
+	}
+	else
+	{
+		Serial.println("Failed to process timeout");
+	}
+
+	return blCheck;
+}
+
+//*****************************.processVersion.*********************************
+// Purpose : Function to process version command
+// Inputs  : None
+// Outputs : None
+// Return  : true if no error, else false
+// Notes   : None
+//******************************************************************************
+bool processVersion(void)
+{
+	bool blCheck = false;
+
+	if (true == processVersionResponse())
 	{
 		uartDelay(MAX_SLEEP);
 		blCheck = true;
 	}
 	else
 	{
-		Serial.println("Failed to process timeout");
+		Serial.println("Failed to process version");
 	}
 
 	return blCheck;

@@ -39,11 +39,11 @@ typedef enum
 //***************************** Global Variables *******************************
 bool getValue(void);
 bool dataFormat(BLE_SENSOR *pstReadings, uint32 *pulReadings);
-bool dataTlv(uint32 ulData, uint8 *ucTlvBuffer,
+bool dataTlv(uint8 *pucData, uint8 *ucTlvBuffer,
                 uint8 ucType, uint8 ucLength);
 bool dataBuildPacket(DATA_PACKET *pstData, uint8 ucCmdType, uint8 ucCmd,
 					 uint32 ulUid, uint16 unLength, uint8 *ucTlvBuffer);
-bool dataExtract(uint16 *punData, uint8 *pucType, uint8 *pucTlvBuffer);
+bool dataExtract(uint8 *pucData, uint8 *pucType, uint8 *pucTlvBuffer);
 bool dataBuilder(uint8 *pucBuffer, DATA_PACKET stData, uint8 ucSize);
 bool dataParser(DATA_PACKET *pstData);
 bool dataVerifyChecksum(DATA_PACKET stData);

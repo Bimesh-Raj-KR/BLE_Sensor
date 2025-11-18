@@ -15,13 +15,6 @@
 #include "bleFunctions.h"
 
 //******************************* Global Types *********************************
-typedef enum
-{
-	TYPE_TEMP = 0x00,
-	TYPE_HUMD = 0x01,
-	TYPE_TIME = 0x02
-}TLV_TYPES;
-
 typedef struct _BLE_SENSOR_
 {
 	uint8 ucHumidInt;
@@ -32,15 +25,18 @@ typedef struct _BLE_SENSOR_
 }BLE_SENSOR;
 
 //***************************** Global Constants *******************************
+#define MAX_DATA				(2)
+#define VERSION_SIZE			(6)
 #define TEMPERATURE_UUID 		(0x2A1C)
 #define HUMIDITY_UUID 			(0x2A6F)
-#define MAX_DATA				(2)
+#define CHAR_NULL				('\n')
 
 //***************************** Global Variables ******************************* 
 
 //**************************** Forward Declarations ****************************
 bool bleSetup();
 bool bleTransmit(uint32 *pulReadings, uint8 *pucType);
+bool bleStringTransmit(uint8 *pucReadings, uint8 ucType);
 
 //*********************** Inline Method Implementations ************************ 
 

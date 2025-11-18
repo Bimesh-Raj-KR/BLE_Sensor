@@ -22,7 +22,7 @@
 
 //*********************************.dataTlv.************************************
 // Purpose : Function to convert data to TLV format
-// Inputs  : ulData - Data to be converted
+// Inputs  : pucData - Data to be converted
 //			 pucTlvBuffer - Buffer to store TLV data
 //			 ucType - type of data
 //			 ucLength - size of data
@@ -30,16 +30,16 @@
 // Return  : true if no error, else false
 // Notes   : None
 //******************************************************************************
-bool dataTlv(size_t ulData, uint8 *pucTlvBuffer,
+bool dataTlv(uint8 *pucData, uint8 *pucTlvBuffer,
                 uint8 ucType, uint8 ucLength)
 {
     bool blCheck = false;
 
-    if ((NULL != pucTlvBuffer) && (0 < ucLength))
+    if ((NULL != pucTlvBuffer) && (NULL != pucData) && (0 < ucLength))
     {
         pucTlvBuffer[DATA_TYPE] = ucType;
         pucTlvBuffer[DATA_LENGTH] = ucLength;
-        memcpy(&pucTlvBuffer[DATA_VALUE], &ulData, ucLength);
+        memcpy(&pucTlvBuffer[DATA_VALUE], pucData, ucLength);
         blCheck = true;
     }
 
@@ -130,19 +130,19 @@ bool dataBuildPacket(DATA_PACKET *pstData, uint8 ucCmdType, uint8 ucCmd,
 // Return  : true if no error, else false
 // Notes   : None
 //******************************************************************************
-bool dataExtract(size_t *pulData, uint8 *pucType, uint8 *pucTlvBuffer)
+bool dataExtract(uint8 *pucData, uint8 *pucType, uint8 *pucTlvBuffer)
 {
     bool blCheck = false;
     uint8 ucLength = 0;
 
-    if ((NULL != pulData) && (NULL != pucType) && (NULL != pucTlvBuffer))
+    if ((NULL != pucData) && (NULL != pucType) && (NULL != pucTlvBuffer))
     {
         *pucType = pucTlvBuffer[DATA_TYPE];
         ucLength = pucTlvBuffer[DATA_LENGTH];
 
         if (0 < ucLength)
         {
-			memcpy(pulData, &pucTlvBuffer[DATA_VALUE], ucLength);
+			memcpy(pucData, &pucTlvBuffer[DATA_VALUE], ucLength);
 			blCheck = true;
         }
     }

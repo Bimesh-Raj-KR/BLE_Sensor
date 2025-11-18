@@ -19,6 +19,7 @@
 //***************************** Local Variables ********************************
 static BLECharacteristic *pHumidCharacteristics = NULL;
 static BLECharacteristic *pTempCharacteristics = NULL;
+static BLECharacteristic *pVersionCharacteristics = NULL;
 static BLECharacteristic *pDatarateCharacteristics = NULL;
 
 //***************************** Local Functions ********************************
@@ -50,6 +51,7 @@ bool bleSetup()
     bleCharacteristics(&pTempCharacteristics, &pService, 
                                 (uint16) TEMPERATURE_UUID);
     bleWriteCharacteristics(&pDatarateCharacteristics, &pService);
+    bleStringCharacteristics(&pVersionCharacteristics, &pService);
 
     // Create callback
     bleCallback(&pDatarateCharacteristics);
@@ -76,7 +78,8 @@ bool bleSetup()
 
 //******************************.bleTransmit.***********************************
 // Purpose : Function to set characteristics value and transmit it to the client
-// Inputs  : pstReadings - Pointer to the struct containing readings
+// Inputs  : pulReadings - Pointer to the array containing readings
+//           pucType - Pointer to the array containing reading's type
 // Outputs : None
 // Return  : true if no error, else false
 // Notes   : None
@@ -105,6 +108,35 @@ bool bleTransmit(uint32 *pulReadings, uint8 *pucType)
     else
     {
         Serial.println("Failed to transmit over BLE");
+    }
+
+    return blCheck;
+}
+
+//**************************.bleStringTransmit.*********************************
+// Purpose : Function to set string characteristics value and transmit it to 
+//           the client
+// Inputs  : pucBuffer - Pointer to the array containing versions in string
+//           ucType - Type of data received
+// Outputs : None
+// Return  : true if no error, else false
+// Notes   : None
+//******************************************************************************
+bool bleStringTransmit(uint8 *pucBuffer, uint8 ucType)
+{
+    bool blCheck = false;
+    uint8 ucIterator = 0;
+    uint8 ucOffset = 0;
+
+    if ((TYPE_VERS == ucType))
+    {
+        bleStringSet(&pVersionCharacteristics, pucBuffer, VERSION_SIZE);
+        bleNotify(&pVersionCharacteristics);
+        blCheck = true;
+    }
+    else
+    {
+        Serial.println("Failed to transmit string over BLE");
     }
 
     return blCheck;

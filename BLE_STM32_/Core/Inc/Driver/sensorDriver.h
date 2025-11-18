@@ -48,7 +48,7 @@ typedef struct _BLE_SENSOR_
 //***************************** Global Variables *******************************
 
 //**************************** Forward Declarations ****************************
-void sensorStart();
+void sensorStart(void);
 bool sensorOutput(uint32 ulDifference);
 bool sensorReadings(BLE_SENSOR *pstReadings);
 

@@ -83,7 +83,7 @@ bool dataFormat(BLE_SENSOR *pstReadings, uint32 *pulReadings)
 
 //*********************************.dataTlv.************************************
 // Purpose : Function to convert data to TLV format
-// Inputs  : ulData - Data to be converted
+// Inputs  : pucData - Data to be converted
 //			 pucTlvBuffer - Buffer to store TLV data
 //			 ucType - type of data
 //			 ucLength - size of data
@@ -91,16 +91,16 @@ bool dataFormat(BLE_SENSOR *pstReadings, uint32 *pulReadings)
 // Return  : true if no error, else false
 // Notes   : None
 //******************************************************************************
-bool dataTlv(uint32 ulData, uint8 *ucTlvBuffer,
+bool dataTlv(uint8 *pucData, uint8 *ucTlvBuffer,
                 uint8 ucType, uint8 ucLength)
 {
     bool blCheck = false;
 
-    if ((NULL != ucTlvBuffer) && (0 < ucLength))
+    if ((NULL != ucTlvBuffer) && (NULL != pucData) && (0 < ucLength))
     {
         ucTlvBuffer[DATA_TYPE] = ucType;
         ucTlvBuffer[DATA_LENGTH] = ucLength;
-        memcpy(&ucTlvBuffer[DATA_VALUE], &ulData, ucLength);
+        memcpy(&ucTlvBuffer[DATA_VALUE], pucData, ucLength);
         blCheck = true;
     }
 
@@ -184,26 +184,26 @@ bool dataBuildPacket(DATA_PACKET *pstData, uint8 ucCmdType, uint8 ucCmd,
 
 //********************************.dataExtract.*********************************
 // Purpose : Function to extract meaningful data from TLV buffer
-// Inputs  : pulData - Stores data after extraction
+// Inputs  : pucData - Stores data after extraction
 //			 pucType - Stores the type of data
 //			 pucTlvBuffer - The TLV buffer from which data is extracted
 // Outputs : None
 // Return  : true if no error, else false
 // Notes   : None
 //******************************************************************************
-bool dataExtract(uint16 *punData, uint8 *pucType, uint8 *pucTlvBuffer)
+bool dataExtract(uint8 *pucData, uint8 *pucType, uint8 *pucTlvBuffer)
 {
     bool blCheck = false;
     uint8 ucLength = 0;
 
-    if ((NULL != punData) && (NULL != pucType) && (NULL != pucTlvBuffer))
+    if ((NULL != pucData) && (NULL != pucType) && (NULL != pucTlvBuffer))
     {
         *pucType = pucTlvBuffer[DATA_TYPE];
         ucLength = pucTlvBuffer[DATA_LENGTH];
 
         if (0 < ucLength)
         {
-			memcpy(punData, &pucTlvBuffer[DATA_VALUE], ucLength);
+			memcpy(pucData, &pucTlvBuffer[DATA_VALUE], ucLength);
 			blCheck = true;
         }
     }

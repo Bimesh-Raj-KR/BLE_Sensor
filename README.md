@@ -4,8 +4,8 @@ A BLE_Sensor project that allows Interboard communication between **STM32** and 
 
 ## Features
 
-Organized source code in multiple directories
-Use of **PlatformIO** and **STM32CubeIDE**
+Organized source code in multiple directories   
+Use of **PlatformIO** and **STM32CubeIDE**   
 
 ## Prerequisites
 

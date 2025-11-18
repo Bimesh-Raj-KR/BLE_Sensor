@@ -19,7 +19,8 @@ typedef enum
 {
 	TYPE_TEMP = 0x00,
 	TYPE_HUMD = 0x01,
-	TYPE_TIME = 0x02
+	TYPE_TIME = 0x02,
+	TYPE_VERS = 0x03
 }TLV_TYPES;
 
 typedef enum
@@ -32,16 +33,20 @@ typedef enum
 {
 	CMD_PING = 0x00,
 	CMD_TELM = 0x01,
-	CMD_TIME = 0x02
+	CMD_TIME = 0x02,
+	CMD_VERS = 0x03
 }CMD_NAMES;
 
 //***************************** Global Constants *******************************
+#define CURRENT_VERSION			"18.01"
 #define TIMER_DELAY             (2000)
 #define REQUIRED_DELAY			(1500)
 #define MAX_BUFFER_SIZE			(40)
 #define TIMEOUT_DATA_SIZE		(13)
 #define SENSOR_DATA_SIZE		(12)
+#define VERSION_DATA_SIZE		(8)
 #define DATA_OFFSET				(6)
+#define VERSION_SIZE			(6)
 #define THREAD_WAIT				(5)
 #define MAX_SENSOR_DATA			(2)
 
@@ -55,6 +60,8 @@ bool receiveTelemetryRequest(DATA_PACKET *pstTelemetry);
 bool sendTelemetryResponse(DATA_PACKET *pstTelemetry);
 bool sendTimeoutRequest(DATA_PACKET *pstTimeout);
 bool receiveTimeoutResponse(DATA_PACKET *pstTimeout);
+bool receiveVersionRequest(DATA_PACKET *pstVersion);
+bool sendVersionResponse(DATA_PACKET *pstVersion);
 bool delayProcess(void);
 
 //*********************** Inline Method Implementations ************************

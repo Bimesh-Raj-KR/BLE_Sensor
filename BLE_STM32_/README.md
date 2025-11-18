@@ -6,13 +6,14 @@
 
 1. On receiving **Ping** response, refreshes **watchdog.**
 2. On receiving **Telemetry** request, reads and send over sensor readings.
-3. On receiving **Timeout** response, updates **watchdog** and timeout **delay.**
+3. On receiving **Timeout** response, updates **watchdog** and timeout delay.
+4. On receiving **Version** request, send over **STM32CubeIDE** version.
 
 ## Features
 
-Organized source codes in a single directory and further in subdirectories
-Organized includes in a single directory and further in subdirectories
-Use of **STM32CubeIDE**
+Organized source codes in a single directory and further in subdirectories   
+Organized includes in a single directory and further in subdirectories   
+Use of **STM32CubeIDE**   
 
 ## Prerequisites
 

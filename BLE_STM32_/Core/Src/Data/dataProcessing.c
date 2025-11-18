@@ -243,7 +243,7 @@ static bool sendSensorData(DATA_PACKET *pstTelemetry, uint32 *pulReadings)
 		for (ucIterator = 0; ucIterator < MAX_SENSOR_DATA; ucIterator ++)
 		{
 			unOffset = ucIterator * DATA_OFFSET;
-			dataTlv(pulReadings[ucIterator], ucTlvData + unOffset,
+			dataTlv((uint8*)&pulReadings[ucIterator], ucTlvData + unOffset,
 					ucType[ucIterator], sizeof(uint32));
 		}
 
@@ -318,8 +318,7 @@ bool receiveTimeoutResponse(DATA_PACKET *pstTimeout)
 				(CMD_TIME == pstTimeout->ucCmd) &&
 			(true == dataVerifyChecksum(*pstTimeout)))
 		{
-			printf("[%d]Received Timeout response, delaying process\r\n",
-					ulCurrentUid);
+			printf("[%d]Received Timeout response\r\n", ulCurrentUid);
 			getTimeout(pstTimeout);
 			blCheck = true;
 		}
@@ -349,7 +348,7 @@ static bool getTimeout(DATA_PACKET *pstTimeout)
 	{
 		if (NULL != pstTimeout->pucData)
 		{
-			dataExtract(&unDelay, &ucType, pstTimeout->pucData);
+			dataExtract((uint8*)&unDelay, &ucType, pstTimeout->pucData);
 			free(pstTimeout->pucData);
 		}
 
@@ -377,6 +376,75 @@ static bool getTimeout(DATA_PACKET *pstTimeout)
 	return blCheck;
 }
 
+//**************************.receiveVersionRequest.*****************************
+// Purpose : Function to receive version request
+// Inputs  : pstVersion - Version data packet
+// Outputs : None
+// Return  : true if no error, else false
+// Notes   : None
+//******************************************************************************
+bool receiveVersionRequest(DATA_PACKET *pstVersion)
+{
+	bool blCheck = false;
+
+	if (NULL != pstVersion)
+	{
+		// Parses data
+		dataParser(pstVersion);
+
+		if ((CMD_REQ == pstVersion->ucCmdType)
+			&& (CMD_VERS == pstVersion->ucCmd)
+			&& (true == dataVerifyChecksum(*pstVersion)))
+		{
+			printf("[%d]Received version request, sending IDE version\r\n",
+					ulCurrentUid);
+			blCheck = true;
+		}
+	}
+
+	if (true != blCheck)
+	{
+		printf("Version request not received\r\n");
+	}
+
+	return blCheck;
+}
+
+//**************************.sendVersionResponse.*******************************
+// Purpose : Function to send version of IDE as response
+// Inputs  : pstVersion - Version data packet
+// Outputs : None
+// Return  : true if no error, else false
+// Notes   : None
+//******************************************************************************
+bool sendVersionResponse(DATA_PACKET *pstVersion)
+{
+	bool blCheck = false;
+	uint8 ucTlvData[VERSION_DATA_SIZE] = {0};
+	uint8 ucVersion[VERSION_SIZE] = CURRENT_VERSION;
+	uint8 ucTransmitBuffer[MIN_BUFFER_SIZE + VERSION_DATA_SIZE] = {0};
+
+	if (NULL != pstVersion)
+	{
+		// build data for transmission
+		dataTlv(ucVersion, ucTlvData, TYPE_VERS, VERSION_SIZE);
+		dataBuildPacket(pstVersion, CMD_RESP, CMD_VERS, ulCurrentUid,
+				VERSION_DATA_SIZE, ucTlvData);
+		dataBuilder(ucTransmitBuffer, *pstVersion,
+					MIN_BUFFER_SIZE + VERSION_DATA_SIZE);
+
+		// transmit data packet
+		uartTransmit(ucTransmitBuffer, MIN_BUFFER_SIZE + VERSION_DATA_SIZE);
+		blCheck = true;
+	}
+	else
+	{
+		printf("Failed to send Version response\r\n");
+	}
+
+	return blCheck;
+}
+
 //******************************.delayProcess.**********************************
 // Purpose : Function to delay the process
 // Inputs  : None
@@ -390,6 +458,7 @@ bool delayProcess(void)
 
 	if (0 != unDelay)
 	{
+		printf("[%d]Delaying process\r\n", ulCurrentUid);
 		milliDelay(unDelay);
 		blCheck = true;
 	}

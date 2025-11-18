@@ -74,6 +74,12 @@ bool uartCommunication(void)
             case CMD_TIME:
 
                 processTimeout();
+
+                break;
+
+            case CMD_VERS:
+
+                processVersion();
                 ucDelayFlag = 1;
 
                 break;
