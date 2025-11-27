@@ -1,0 +1,16 @@
+
+[Unit]
+Description=Open File Count Service
+After=network.target
+
+[Service]
+ExecStart=/mnt/d/linux_file/appCount
+Restart=always
+RestartSec=300
+User=bimesh
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=countFiles
+
+[Install]
+WantedBy=multi-user.target
