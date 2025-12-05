@@ -5,8 +5,6 @@ After=network.target
 [Service]
 WorkingDirectory=/usr/local/bin
 ExecStart=/usr/local/bin/appCount.sh
-Restart=always
-RestartSec=300
 User=root
 
 [Install]

@@ -3,6 +3,9 @@
 # Syslog identifier
 logId="AppCounter"
 
+# infinite loop to run the script every 5 minutes
+while true; do
+
 # TotalCount of File Descriptors (FDs)
 totalCount=0
 
@@ -10,9 +13,10 @@ totalCount=0
 allPids=$(pgrep /usr/sbin/sshd)
 
 if [ -z "$allPids" ]; then
+
     logger -t "$logId" "No processes found"
-    exit 0
-fi
+
+else
 
 # Loop through each PID
 for pid in $allPids; do
@@ -26,3 +30,10 @@ done
 
 # Log total count
 logger -t "$logId" "Total FDs across all PIDs: $totalCount"
+
+fi
+
+# Sleep for 5 minutes
+sleep 300 
+
+done
