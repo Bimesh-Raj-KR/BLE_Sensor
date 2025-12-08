@@ -10,7 +10,7 @@ while true; do
 totalCount=0
 
 # Get all PIDs of app /usr/sbin/sshd
-allPids=$(pgrep /usr/sbin/sshd)
+allPids=$(pgrep sshd)
 
 if [ -z "$allPids" ]; then
 
