@@ -26,10 +26,11 @@ typedef int int32;
 typedef unsigned int uint32;
 
 //***************************** Global Constants *******************************
-#define PORT                    (8080)
+#define PORT                    (9078)
 #define BUFFER_SIZE             (4096)
+#define MAX_ARG                 (3)
+#define IP_ARG                  (2)
 #define ERROR_CODE              (-1)
-#define SERVER_IP               "172.29.91.196"
 #define READ_BINARY             "rb"
 
 //***************************** Global Variables *******************************

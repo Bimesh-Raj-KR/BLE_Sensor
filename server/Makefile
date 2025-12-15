@@ -6,7 +6,7 @@ CC = gcc
 CFLAGS = -Wall -Werror -Wextra -fanalyzer
 
 # All .h Includes
-INCLUDES = -static -IserverFunctions
+INCLUDES = -IserverFunctions
 
 # All source files
 source_files = $(wildcard *.c serverFunctions/*.c)

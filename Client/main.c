@@ -30,7 +30,7 @@
 //******************************************************************************
 int main(int32 lArgCount, int8 *pArgVector[])
 {
-    if (2 == lArgCount) 
+    if (MAX_ARG == lArgCount) 
     {
         clientSetup(pArgVector);        
     }

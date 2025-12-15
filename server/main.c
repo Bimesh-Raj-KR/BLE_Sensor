@@ -32,7 +32,7 @@
 
 int main() 
 {
-    mkdir(RECEIVED_FOLDER, 0755);
+    mkdir(RECEIVED_FOLDER, PERMISSION);
     serverSetup();
 
     return 0;

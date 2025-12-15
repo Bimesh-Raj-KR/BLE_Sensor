@@ -40,7 +40,7 @@ bool clientSetup(int8 *pArgVector[])
     if (ERROR_CODE != nSocket) 
     {
         stServerAddr.sin_family = AF_INET;
-        stServerAddr.sin_addr.s_addr = inet_addr(SERVER_IP);
+        stServerAddr.sin_addr.s_addr = inet_addr(pArgVector[IP_ARG]);
         stServerAddr.sin_port = htons(PORT);
 
         if (ERROR_CODE != connect(nSocket, (struct sockaddr*)&stServerAddr, 
