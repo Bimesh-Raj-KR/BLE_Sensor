@@ -31,7 +31,7 @@ typedef unsigned long uint64;
 
 //***************************** Global Constants *******************************
 #define PORT                    (9078)
-#define BUFFER_SIZE             (4096)
+#define BUFFER_SIZE             (1024)
 #define PERMISSION              (0755)
 #define FILE_PATH_SIZE          (512)
 #define FILE_NAME_SIZE          (256)

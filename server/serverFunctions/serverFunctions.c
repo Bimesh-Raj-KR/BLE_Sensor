@@ -20,7 +20,6 @@
 
 //***************************** Local Functions ********************************
 static bool serverReceiveFile(int16 nServerSocket);
-static bool serverIgnorePath(int8 *pcFileName);
 static bool serverGetIp(int8 *pcIpAddress);
 
 //******************************.serverSetup.***********************************
@@ -46,18 +45,30 @@ bool serverSetup(void)
         stServerAddr.sin_family = AF_INET;
         stServerAddr.sin_addr.s_addr = inet_addr(cIpAddress);
         stServerAddr.sin_port = htons(PORT);
-        bind(nServerSocket, (struct sockaddr*)&stServerAddr, 
-                             sizeof(stServerAddr));
-        listen(nServerSocket, 1);
-        printf("Server listening on port %d...\n", PORT);
-
-        while (1) 
+        if (ERROR_CODE != bind(nServerSocket, (struct sockaddr*)&stServerAddr, 
+                             sizeof(stServerAddr))) 
         {
-           if (true == serverReceiveFile(nServerSocket))
-           {
-               printf("File received successfully.\n");
-               blCheck = true;
-           }
+            if (ERROR_CODE != listen(nServerSocket, 1))
+            {
+                printf("Server listening on port %d...\n", PORT);
+
+                while (1) 
+                {
+                    if (true == serverReceiveFile(nServerSocket))
+                    {
+                        printf("File received successfully.\n");
+                        blCheck = true;
+                    }
+                }
+            }
+            else 
+            {
+                printf("Listen failed\n");
+            }
+        }
+        else 
+        {
+            printf("Bind failed\n");
         }
 
         // The code is unlikely to reach here
@@ -107,7 +118,6 @@ static bool serverReceiveFile(int16 nServerSocket)
         if (0 < ulNameLength) 
         {
             cNameBuffer[ulNameLength] = NULL_CHAR;
-            serverIgnorePath(cNameBuffer);
             snprintf(cFileName, sizeof(cFileName), 
                     "%s/%s", RECEIVED_FOLDER, cNameBuffer);
             printf("Receiving: %s\n", cNameBuffer);
@@ -129,7 +139,8 @@ static bool serverReceiveFile(int16 nServerSocket)
                         recv(nClientSocket, cBuffer, BUFFER_SIZE, 0)))) 
                     {
                         fwrite(cBuffer, 1, receivedBytes, pstFile);
-                        ulTotalBytes += receivedBytes;
+                        printf("Received %d bytes\n", receivedBytes);
+                        ulTotalBytes += receivedBytes; 
                     }
 
                     fclose(pstFile);
@@ -144,52 +155,6 @@ static bool serverReceiveFile(int16 nServerSocket)
     if(true != blCheck)
     {
         printf("Failed to receive file\n");
-    }
-
-    return blCheck;
-}
-
-//****************************.serverIgnorePath.********************************
-// Purpose : Function to Ignore the Path in a File Name
-// Inputs  : pcFileName - Pointer to the file name
-// Outputs : None
-// Return  : true if there are no errors and false if any errors exist
-//           during function execution
-// Notes   : None
-//******************************************************************************
-static bool serverIgnorePath(int8 *pcFileName)
-{
-    bool blCheck = false;
-    uint32 ulIndex = 0;
-    uint32 ulPosition = 0;
-    uint32 ulNameLength = 0;
-    uint8 ucFlag = 0;
-
-    if (NULL != pcFileName)
-    {
-        while (NULL_CHAR != pcFileName[ulIndex])
-        {
-            if (PATH_SEPARATOR == pcFileName[ulIndex]) 
-            {
-                ulPosition = ulIndex;
-                ucFlag = 1;
-            }
-
-            ulIndex ++;
-        }
-
-        if (1 == ucFlag) 
-        {
-            ulNameLength = strlen(pcFileName) - ulPosition;
-            memmove(pcFileName, &pcFileName[ulPosition + 1], ulNameLength);
-            pcFileName[ulNameLength - 1] = NULL_CHAR;
-        }
-        
-        blCheck = true;
-    }
-    else
-    {
-        printf("Invalid file name\n");
     }
 
     return blCheck;

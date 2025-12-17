@@ -20,6 +20,7 @@
 
 //***************************** Local Functions ********************************
 static bool clientFileSend(int8 *pArgVector[], int16 nSocket);
+static bool clientIgnorePath(int8 *pcFilePath, int8 *pcFileName);
 
 //*****************************.clientProcess.**********************************
 // Purpose : Function to setup client.
@@ -34,6 +35,9 @@ bool clientSetup(int8 *pArgVector[])
     bool blCheck = false;
     struct sockaddr_in stServerAddr = {0};
     int16 nSocket = 0;
+    uint32 ulEnable = 0;
+    int8 cFileName[FILE_SIZE] = {0};
+    int8 cFilePath[FILE_SIZE] = {0};
 
     nSocket = socket(AF_INET, SOCK_STREAM, 0);
   
@@ -46,8 +50,14 @@ bool clientSetup(int8 *pArgVector[])
         if (ERROR_CODE != connect(nSocket, (struct sockaddr*)&stServerAddr, 
                             sizeof(stServerAddr))) 
         {
-            if (ERROR_CODE != send(nSocket, pArgVector[1], 
-                                    strlen(pArgVector[1]), 0))
+            ulEnable = 1;
+            setsockopt(nSocket, IPPROTO_TCP, TCP_NODELAY, &ulEnable, 
+                        sizeof(ulEnable));
+            strcpy(cFilePath, pArgVector[1]);
+            clientIgnorePath(cFilePath, cFileName);
+
+            if (ERROR_CODE != send(nSocket, cFileName, 
+                                    strlen(cFileName), 0))
             {
                 if (true == clientFileSend(pArgVector, nSocket)) 
                 {
@@ -108,6 +118,7 @@ static bool clientFileSend(int8 *pArgVector[], int16 nSocket)
                     ulTotalSent += ulBytesRead;
                     printf("Uploaded: %d/%d bytes\n", ulTotalSent, ulFileSize);
                     blCheck = true;
+                    usleep(MIN_DELAY);
                 }
             }
 
@@ -121,6 +132,57 @@ static bool clientFileSend(int8 *pArgVector[], int16 nSocket)
     if (true != blCheck) 
     {
         printf("File transfer failed\n");
+    }
+
+    return blCheck;
+}
+
+//****************************.clientIgnorePath.********************************
+// Purpose : Function to Ignore the Path in a File Name
+// Inputs  : pcFilePath - Pointer to the file path
+//           pcFileName - Pointer to the file name
+// Outputs : None
+// Return  : true if there are no errors and false if any errors exist
+//           during function execution
+// Notes   : None
+//******************************************************************************
+static bool clientIgnorePath(int8 *pcFilePath, int8 *pcFileName)
+{
+    bool blCheck = false;
+    uint32 ulIndex = 0;
+    uint32 ulPosition = 0;
+    uint32 ulNameLength = 0;
+    uint8 ucFlag = 0;
+
+    if ((NULL != pcFileName) && (NULL != pcFilePath))
+    {
+        while (NULL_CHAR != pcFilePath[ulIndex])
+        {
+            if (PATH_SEPARATOR == pcFilePath[ulIndex]) 
+            {
+                ulPosition = ulIndex;
+                ucFlag = 1;
+            }
+
+            ulIndex ++;
+        }
+
+        if (1 == ucFlag) 
+        {
+            ulNameLength = strlen(pcFilePath) - ulPosition;
+            memcpy(pcFileName, &pcFilePath[ulPosition + 1], ulNameLength);
+            pcFileName[ulNameLength - 1] = NULL_CHAR;
+        }
+        else
+        {
+            strcpy(pcFileName, pcFilePath);
+        }
+
+        blCheck = true;
+    }
+    else
+    {
+        printf("Invalid file name\n");
     }
 
     return blCheck;

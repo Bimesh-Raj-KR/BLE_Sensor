@@ -56,4 +56,5 @@ dkms.conf
 
 # Others
 *.txt
+*.sh
 *Received_Files/
