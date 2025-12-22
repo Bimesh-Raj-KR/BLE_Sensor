@@ -4,8 +4,8 @@ A C project to create two **apps**, one to write a new line to a file and one to
 
 ## Features
 
-**appWrite** write a new line in a file infinitely until the loop iterates **300** times.   
-**appRead** reads the new line count from the file infintely until count remains same for **5** consecutive iterations.    
+**appWrite** write a new line in a file until the loop iterates **300** times.   
+**appRead** reads the new line count from the file indefinitely until count remains same for **5** consecutive iterations.    
 The delay between iterations for write is **600ms** and for read is **900ms.**   
 
 ## Building with Make
