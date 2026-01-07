@@ -38,3 +38,14 @@ In my example I run an nginx server on localhost port 8085. the nginx port then 
 The javascript uses fetch api to continuously get response from the server to update date and time on the webpage   
 
 Check if the server is responding using "curl http://127.0.0.1:8085/time/"   
+
+There are different ways to request a connection with the backend server.
+These are collectively  termed HTTP request methods
+The main five HTTP request methods are
+
+GET - GET request is used to access resource from the server
+POST - POST request creates a resource in the server. It is the primary method of giving data to the server from the web page
+PUT- PUT is used to modify the data or resource. It will replace the specified data with the modified data completely
+PATCH - PATCH is used in cases where only partial modification of data is needed
+DELETE - DELETE is used to delete a resource from the server
+
