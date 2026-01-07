@@ -1,8 +1,8 @@
-async function fetchTime() 
+async function fetchHeader() 
 {
     try {
-        const response = await fetch('/getTimeFile/time.json');
-    
+        const response = await fetch('/getHeaderFile/header.json');
+
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -11,8 +11,8 @@ async function fetchTime()
         const filContent = await binaryData.text();
         const data = JSON.parse(filContent);
 
-        document.getElementById('date-display').textContent = data.Date;
-        document.getElementById('time-display').textContent = data.Time;
+        document.getElementById('page-title').textContent = data.Title;
+        document.getElementById('add-title').textContent = data.Brackets;
     } 
 
     catch (error) {
@@ -20,4 +20,4 @@ async function fetchTime()
     }
 }
 
-setInterval(fetchTime, 1000);
+setTimeout(fetchHeader, 500);

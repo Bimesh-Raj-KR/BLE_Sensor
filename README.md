@@ -1,6 +1,6 @@
 # NGINX
 
-A C project to establish connection between a **C server** and **web page client** using **nginx** as a **reverse proxy server** facilitating the connection. The **C server** creates a **dynamic JSON** object containing date and time and sends to client. The **web page** using **javascript** fetch and parse the time and date from the server every **1s.**
+A C project to establish connection between a **C server** and **web page client** using **nginx** as a **reverse proxy server** facilitating the connection. The **C server** creates a **dynamic JSON** object containing date and time, put it in a **file** created using the filename attached to the **GET** request and sends to client. The **web page** using **javascript** fetch and parse the time and date from the file every **1s.** The **C server** also does the same for the **web page header.**
 
 ## Prerequisites
 
@@ -40,10 +40,16 @@ server {
                 try_files $uri $uri/ =404;  
         }  
 
-        location /time/ {   
-                proxy_pass http://127.0.0.1:9079;  
-                proxy_set_header Host $host;   
-                proxy_buffering off;  
+        location /getHeaderFile/ {
+		proxy_pass http://127.0.0.1:9079;
+		proxy_set_header Host $host;
+		proxy_buffering off;
+	}
+
+        location /getTimeFile/ {
+                proxy_pass http://127.0.0.1:9079;
+                proxy_set_header Host $host;
+                proxy_buffering off;
         }  
 }   
 
@@ -72,3 +78,4 @@ Output: jsonTime
 ### $ make clean
 
 Removes jsonTime
+Removes the created JSON files

@@ -18,3 +18,5 @@ time: $(source_files)
 # Clean up
 clean:
 	rm -f jsonTime
+	rm -f header.json
+	rm -f time.json

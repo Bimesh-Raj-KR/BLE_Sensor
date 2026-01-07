@@ -14,6 +14,7 @@ The priority for .html files is set using **index**
 The default base directory root is set to **/var/www/html/**    
 The hostname to be handled is set using **server_name** which on default is **_** . This lets it handle all hostnames that can access the port   
 The location directive helps in handling requests. It can be used to reject specific files when establishing web connection. It can also return error messages when particular cases are not met. On default it is configured to return 404 when the requested page is not found   
+The **location** directive is used to check and specify further details about the request
 These default settings can be changed inside the default file.  
 
 ## Web connection
