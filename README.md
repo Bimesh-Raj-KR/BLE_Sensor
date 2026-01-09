@@ -8,7 +8,8 @@ Open **/etc/nginx/sites-available/default**
 
 Create a server block in it like below   
 
-server {   
+server  
+{   
         listen 8083 default_server;   
         listen [::]:8083 default_server;   
 
