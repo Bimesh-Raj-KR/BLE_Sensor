@@ -8,23 +8,23 @@ Open **/etc/nginx/sites-available/default**
 
 Create a server block in it like below   
 
-server {
-        listen 8083 default_server;
-        listen [::]:8083 default_server;
+server {   
+        listen 8083 default_server;   
+        listen [::]:8083 default_server;   
 
-        root /var/www/html;
-        index indexCount.html;
+        root /var/www/html;   
+        index indexCount.html;   
 
-        location / {
-                try_files $uri $uri/ =404;
-        }
+        location / {   
+                try_files $uri $uri/ =404;   
+        }  
 
-        location /Count/ {
-                proxy_pass http://127.0.0.1:9080;
-                proxy_set_header Host $host;
-                proxy_buffering off;
-        }
-}
+        location /Count/ {   
+                proxy_pass http://127.0.0.1:9080;  
+                proxy_set_header Host $host;  
+                proxy_buffering off;  
+        }    
+}   
 
 Copy **indexTime.html, scriptTime.js, styleTime.css** to **/var/www/html/**
 
