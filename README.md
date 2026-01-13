@@ -68,19 +68,14 @@ sudo chown www-data:www-data /var/www/cgi-bin/parser.cgi
 sudo nginx -t   
 sudo systemctl reload nginx  
 
-
 create and run **jsonTime**
 
-
-Open webpage http://localhost:8085    
-
+Open webpage http://localhost:8084    
 
 ## Features
 
-
 **Count** will be displayed on the webpage updated every **second**   
 The user can change **count** by entering it inside either the **POST** or **PUT** box  
-
 
 ## Building with Make
 
