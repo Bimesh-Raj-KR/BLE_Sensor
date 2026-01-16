@@ -316,6 +316,7 @@ static bool serverRecordParse(uint32 ulStartAddr, uint32 ulEndAddr)
     bool blCheck = false;
     FILE *pstFile = NULL;
     int8 cReadBuffer[BUFFER_SIZE] = {0};
+    int8 ucFlag = 0;
 
 
     pstFile = fopen(FILE_NAME, READ_COMMAND);
@@ -327,14 +328,17 @@ static bool serverRecordParse(uint32 ulStartAddr, uint32 ulEndAddr)
             if (NULL != strstr(cReadBuffer, START_ONE))
             {
                 parseTypeOne(cReadBuffer, ulStartAddr, ulEndAddr);
+                ucFlag = 1;
             }
             else if (NULL != strstr(cReadBuffer, START_TWO))
             {
                 parseTypeTwo(cReadBuffer, ulStartAddr, ulEndAddr);
+                ucFlag = 1;
             }
             else if (NULL != strstr(cReadBuffer, START_THREE))
             {
                 parseTypeThree(cReadBuffer, ulStartAddr, ulEndAddr);
+                ucFlag = 1;
             }
             else
             {
@@ -342,10 +346,19 @@ static bool serverRecordParse(uint32 ulStartAddr, uint32 ulEndAddr)
             }
         }
 
+        if (1 == ucFlag)
+        {
+            printf("\n**********\n");
+            parseCheckRange();
+        }
+        else
+        {
+            printf("The file is not in S record format\n");
+        }
+
         fclose(pstFile);
-        printf("\n**********\n");
-        parseCheckRange();
         blCheck = true;
+
     }
     else
     {
