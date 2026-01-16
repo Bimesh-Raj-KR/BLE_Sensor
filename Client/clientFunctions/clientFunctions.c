@@ -170,38 +170,41 @@ static bool clientFileSend(int8 *pcFilePath, int32 lSocket)
     uint32 ulFileSize = 0;
     uint32 ulNetSize = 0;
 
-    pstFile = fopen(pcFilePath, READ_BINARY);
-
-    if ((NULL != pstFile) && (NULL != pcFilePath)) 
+    if (NULL != pcFilePath)
     {
-        fseek(pstFile, 0, SEEK_END);
-        ulFileSize = ftell(pstFile);
-        fseek(pstFile, 0, SEEK_SET);
-        ulNetSize = htonl(ulFileSize);
+        pstFile = fopen(pcFilePath, READ_BINARY);
 
-        if (ERROR_CODE != send(lSocket, &ulNetSize, sizeof(ulNetSize), 0)) 
+        if ((NULL != pstFile)) 
         {
-            while (0 <  (ulBytesRead = fread(cBuffer, 1, 
-                                        BUFFER_SIZE, pstFile))) 
+            fseek(pstFile, 0, SEEK_END);
+            ulFileSize = ftell(pstFile);
+            fseek(pstFile, 0, SEEK_SET);
+            ulNetSize = htonl(ulFileSize);
+
+            if (ERROR_CODE != send(lSocket, &ulNetSize, sizeof(ulNetSize), 0)) 
             {
-                if (ERROR_CODE != send(lSocket, cBuffer, ulBytesRead, 0)) 
+                while (0 <  (ulBytesRead = fread(cBuffer, 1, 
+                                            BUFFER_SIZE, pstFile))) 
                 {
-                    usleep(MIN_DELAY);
-                    blCheck = true;
-                }
-                else
-                {
-                    blCheck = false;
-                    break;
+                    if (ERROR_CODE != send(lSocket, cBuffer, ulBytesRead, 0)) 
+                    {
+                        usleep(MIN_DELAY);
+                        blCheck = true;
+                    }
+                    else
+                    {
+                        blCheck = false;
+                        break;
+                    }
                 }
             }
-        }
 
-        fclose(pstFile);
-    }
-    else
-    {
-        printf("Invalid file path\n");
+            fclose(pstFile);
+        }
+        else
+        {
+            printf("Invalid file path\n");
+        }
     }
 
     if (true != blCheck) 
