@@ -101,7 +101,7 @@ static bool clientInputProcess(int32 lSocket)
     scanf(" %c", &cChoice);
     printf("\033[6A\033[J");
 
-    if ('F' == cChoice)
+    if (FILE_CHOICE == cChoice)
     {
         printf("Enter full file path: ");
         scanf(" %255[^\n]", cFilePath);
@@ -116,32 +116,45 @@ static bool clientInputProcess(int32 lSocket)
 
         printf("\033[2A\033[J");
     }
-    else if ('M' == cChoice)
+    else if (MEMORY_CHOICE == cChoice)
     {
         printf("Enter Starting Address: ");
-        scanf("%x", &ulStartAddr);
-        printf("Enter Ending Address: ");
-        scanf("%x", &ulEndAddr);
 
-        if (ERROR_CODE != send(lSocket, ADDRESS_FLAG, 
-            sizeof(ADDRESS_FLAG), 0))
+        if (0 < scanf("%x", &ulStartAddr))
         {
-            if (true == clientAddressSend(ulStartAddr, 
-                                    ulEndAddr, lSocket))
+            printf("Enter Ending Address: ");
+
+            if (0 < scanf("%x", &ulEndAddr))
             {
-                blCheck = true;
+                if (ERROR_CODE != send(lSocket, ADDRESS_FLAG, 
+                    sizeof(ADDRESS_FLAG), 0))
+                {
+                    if (true == clientAddressSend(ulStartAddr, 
+                                            ulEndAddr, lSocket))
+                    {
+                        blCheck = true;
+                    }
+
+                    printf("\033[2A\033[J");
+                }
+            }
+            else
+            {
+                printf("Invalid Ending Address\n");
             }
         }
-
-        printf("\033[2A\033[J");
+        else
+        {
+            printf("Invalid Starting Address\n");
+        }
     }
-    else if ('E' == cChoice)
+    else if (EXIT_CHOICE == cChoice)
     {
         blCheck = false;
     }
     else
     {
-        // countinue
+        // continue
     }
 
     if (true != blCheck)

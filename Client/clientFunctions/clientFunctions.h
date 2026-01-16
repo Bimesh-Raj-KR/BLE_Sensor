@@ -45,6 +45,9 @@ typedef unsigned int uint32;
 #define FROM_COMMAND            "-f"
 #define TO_COMMAND              "-t"
 #define READ_BINARY             "rb"
+#define FILE_CHOICE             'F'
+#define MEMORY_CHOICE           'M'
+#define EXIT_CHOICE             'E'
 
 //***************************** Global Variables *******************************
 

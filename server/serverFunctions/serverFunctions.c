@@ -343,7 +343,7 @@ static bool serverRecordParse(uint32 ulStartAddr, uint32 ulEndAddr)
         }
 
         fclose(pstFile);
-        printf("\n");
+        printf("\n**********\n");
         parseCheckRange();
         blCheck = true;
     }
