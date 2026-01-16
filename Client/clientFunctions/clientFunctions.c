@@ -177,7 +177,7 @@ static bool clientInputProcess(int32 lSocket)
 static bool clientFileSend(int8 *pcFilePath, int32 lSocket)
 {
     bool blCheck = false;
-    FILE *pstFile = {0};
+    FILE *pstFile = NULL;
     int8 cBuffer[BUFFER_SIZE] = {0};
     uint32 ulBytesRead = 0;
     uint32 ulFileSize = 0;
