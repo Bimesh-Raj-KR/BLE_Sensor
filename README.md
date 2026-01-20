@@ -23,6 +23,7 @@ Open **/etc/nginx/sites-available/default**  
 
 ### Create a server block in it like below   
 
+
 server {  
 	listen 8084 default_server;  
 	listen [::]:8084 default_server;  
