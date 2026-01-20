@@ -40,8 +40,6 @@ typedef char int8;
 #define GET                     "GET"
 #define POST                    "POST"
 #define PUT                     "PUT"
-#define WRITE_MODE              "w"
-#define READ_MODE               "r"
 #define NULL_CHAR               '\0'
 #define BACKSLASH               '/'
 #define AMPERSAND               '&'

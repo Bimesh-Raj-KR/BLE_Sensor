@@ -55,13 +55,13 @@ Copy **indexCount.html, scriptGetCount.js, scriptGiveCount.js, styleTime.css** t
 
 cd /var/www/  
 mkdir cgi-bin  
-sudo chmod 775 /var/www/cgi-bin  
-sudo chown root:www-data /var/www/cgi-bin  
+sudo chmod 755 /var/www/cgi-bin  
+sudo chown root:root /var/www/cgi-bin  
 
 **Copy** parse.cgi to mkdir  
 
 sudo chmod 755 /var/www/cgi-bin/cgi-bin/parser.cgi  
-sudo chown www-data:www-data /var/www/cgi-bin/parser.cgi  
+sudo chown root:root /var/www/cgi-bin/parser.cgi  
 
 ### Run commands
 

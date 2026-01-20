@@ -204,47 +204,20 @@ static bool cgiReceiveAndParse(int16 nClientSocket)
 static bool cgiSendToWeb(int8* pcResponseBuffer, int8* pcFileName, int8 cFlag)
 {
     bool blCheck = false;
-    uint16 unFileSize = 0;
-    int16 nBytesRead = 0;
-    int8 cReadBuffer[BUFFER_SIZE] = {0};
-    FILE *pstFile = NULL;
 
     if ((NULL != pcResponseBuffer) && (NULL != pcFileName))
     {
         if (0 == cFlag)
         {
-            pstFile = fopen(pcFileName, WRITE_MODE);
-
-            if (NULL != pstFile)
-            {
-                fputs(pcResponseBuffer, pstFile);
-                fclose(pstFile);
-            }
-
-            pstFile = fopen(pcFileName, READ_MODE);
-
-            if (NULL != pstFile)
-            {
-                fseek(pstFile, 0, SEEK_END);
-                unFileSize = ftell(pstFile);
-                fseek(pstFile, 0, SEEK_SET);
 
                 printf("Content-Type: application/octet-stream\r\n");
                 printf("Content-Disposition: attachment; filename=\"%s\"\r\n", 
                         pcFileName);
-                printf("Content-Length: %d\r\n", unFileSize);
+                printf("Content-Length: %ld\r\n", strlen(pcResponseBuffer));
                 printf("Connection: close\r\n\r\n");
-
-                while (0 < (nBytesRead = fread(cReadBuffer, 1, 
-                    sizeof(cReadBuffer), pstFile)))
-                {
-                    fwrite(cReadBuffer, 1, nBytesRead, stdout);
-                }
-
+                printf("%s", pcResponseBuffer);
                 fflush(stdout);
-                fclose(pstFile);
                 blCheck = true;
-            }
         }
         else
         {
