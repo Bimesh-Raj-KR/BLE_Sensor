@@ -1,0 +1,347 @@
+//***************************** Client Functions *******************************
+// Copyright (c) 2025 Trenser Technology Solutions
+// All Rights Reserved
+//******************************************************************************
+// File    : clientFunctions.c
+// Summary : Setups client to send file and memory range to server
+// Note    : None
+// Author  : Bimesh Raj K R
+// Date    : 20/Jan/2026
+//******************************************************************************
+
+//****************************** Include Files *********************************
+#include "clientFunctions.h"
+
+//******************************* Local Types **********************************
+
+//***************************** Local Constants ********************************
+
+//***************************** Local Variables ********************************
+
+//***************************** Local Functions ********************************
+static bool clientInputProcess(int32 lSocket);
+static bool clientFileSend(int8 *pcFilePath, int32 lSocket);
+static bool clientAddressSend(uint32 ulStartAddr, uint32 ulEndAddr, 
+                                int32 lSocket);
+static bool clientFileReceive(int32 lSocket);
+
+//*******************************.clientSetup.**********************************
+// Purpose : Function to setup client.
+// Inputs  : None
+// Outputs : None
+// Return  : true if client wants to keep connected and false to exit
+// Notes   : None
+//******************************************************************************
+bool clientSetup(void)
+{
+    bool blCheck = false;
+    struct sockaddr_in stServerAddr = {0};
+    struct timeval stTimeout = {0};
+    int32 lSocket = 0;
+
+    lSocket = socket(AF_INET, SOCK_STREAM, 0);
+
+    if (ERROR_CODE != lSocket) 
+    {
+        stTimeout.tv_usec = 0;
+        stTimeout.tv_sec = TIMEOUT_SEC;
+
+        // Set socket receive timeout
+        setsockopt(lSocket, SOL_SOCKET, SO_RCVTIMEO, &stTimeout, 
+                    sizeof(stTimeout));
+        stServerAddr.sin_family = AF_INET;
+        stServerAddr.sin_addr.s_addr = inet_addr(HOST);
+        stServerAddr.sin_port = htons(PORT);
+        
+        if (ERROR_CODE != connect(lSocket, (struct sockaddr*)&stServerAddr, 
+                            sizeof(stServerAddr))) 
+        {
+            while (1)
+            {
+                if (true == clientInputProcess(lSocket)) 
+                {
+                    blCheck = true;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        close(lSocket); 
+    }  
+
+    if (true != blCheck) 
+    {
+        printf("Client side failed\n");
+    }
+
+    return blCheck;
+}
+
+//**************************.clientInputProcess.********************************
+// Purpose : Function to distinguish and process command line inputs
+// Inputs  : lSocket - Socket descriptor
+// Outputs : None
+// Return  : true if client wants to keep connected and false to exit
+// Notes   : None
+//******************************************************************************
+static bool clientInputProcess(int32 lSocket)
+{
+    bool blCheck = false;
+    int8 cChoice = 0;
+    int8 cFilePath[PATH_SIZE] = {0};
+    uint32 ulStartAddr = 0;
+    uint32 ulEndAddr = 0;
+
+    printf("|********WHAT TO DO*******|\n");
+    printf("|  F      -     Send File |\n");
+    printf("|  M      -   Send Memory |\n");
+    printf("|  C      -  Convert File |\n");
+    printf("|  E      -          Exit |\n");
+    printf("|_________________________|\n");
+    scanf(" %c", &cChoice);
+    printf("\033[7A\033[J");
+
+    if (FILE_CHOICE == cChoice)
+    {
+        printf("Enter full file path: ");
+        scanf(" %255[^\n]", cFilePath);
+
+        if (ERROR_CODE != send(lSocket, FILE_FLAG, sizeof(FILE_FLAG), 0))
+        {
+            if (true == clientFileSend(cFilePath, lSocket))
+            {
+                blCheck = true;
+            }
+        } 
+
+        printf("\033[1A\033[J");
+    }
+    else if (MEMORY_CHOICE == cChoice)
+    {
+        printf("Enter Starting Address: ");
+
+        if (0 < scanf("%x", &ulStartAddr))
+        {
+            printf("Enter Ending Address: ");
+
+            if (0 < scanf("%x", &ulEndAddr))
+            {
+                if (ERROR_CODE != send(lSocket, ADDRESS_FLAG, 
+                    sizeof(ADDRESS_FLAG), 0))
+                {
+                    if (true == clientAddressSend(ulStartAddr, 
+                                            ulEndAddr, lSocket))
+                    {
+                        blCheck = true;
+                    }
+
+                    printf("\033[2A\033[J");
+                }
+            }
+            else
+            {
+                printf("Invalid Ending Address\n");
+            }
+        }
+        else
+        {
+            printf("Invalid Starting Address\n");
+        }
+    }
+    else if (CONVERT_CHOICE == cChoice)
+    {
+        printf("Enter file path to convert: ");
+        scanf(" %255[^\n]", cFilePath);
+
+        if (ERROR_CODE != send(lSocket, CONVERT_FLAG, 
+            sizeof(CONVERT_FLAG), 0))
+        {
+            if (true == clientFileSend(cFilePath, lSocket))
+            {
+                if (true == clientFileReceive(lSocket))
+                {
+                    blCheck = true;
+                }
+            }
+        }
+
+        printf("\033[1A\033[J");
+    }
+    else if (EXIT_CHOICE == cChoice)
+    {
+        blCheck = false;
+    }
+    else
+    {
+        printf("Invalid Choice. Try Again..\n");
+        sleep(1);
+        printf("\033[1A\033[J");
+        blCheck = true;
+    }
+
+    if (true != blCheck)
+    {
+        printf("Closing connection.....\n");
+    }
+
+    return blCheck;
+}
+
+//****************************.clientFileSend.**********************************
+// Purpose : Function to send a file to the server
+// Inputs  : pcFilePath - Path to the File
+//           lSocket - Socket descriptor
+// Outputs : None
+// Return  : true if there are no errors and false if any errors exist
+//           during function execution
+// Notes   : None
+//******************************************************************************
+static bool clientFileSend(int8 *pcFilePath, int32 lSocket)
+{
+    bool blCheck = false;
+    FILE *pstFile = NULL;
+    int8 cBuffer[BUFFER_SIZE] = {0};
+    uint32 ulBytesRead = 0;
+    uint32 ulFileSize = 0;
+    uint32 ulNetSize = 0;
+
+    if (NULL != pcFilePath)
+    {
+        pstFile = fopen(pcFilePath, READ_BINARY);
+
+        if ((NULL != pstFile)) 
+        {
+            // Get file size
+            fseek(pstFile, 0, SEEK_END);
+            ulFileSize = ftell(pstFile);
+            fseek(pstFile, 0, SEEK_SET);
+            ulNetSize = htonl(ulFileSize);
+
+            // Send file size to server
+            if (ERROR_CODE != send(lSocket, &ulNetSize, sizeof(ulNetSize), 0)) 
+            {
+                while (0 <  (ulBytesRead = fread(cBuffer, 1, 
+                                            BUFFER_SIZE, pstFile))) 
+                {
+                    // Send file data to server
+                    if (ERROR_CODE != send(lSocket, cBuffer, ulBytesRead, 0)) 
+                    {
+                        usleep(MIN_DELAY);
+                        blCheck = true;
+                    }
+                    else
+                    {
+                        blCheck = false;
+                        break;
+                    }
+                }
+            }
+
+            fclose(pstFile);
+        }
+        else
+        {
+            printf("Invalid file path\n");
+        }
+    }
+
+    if (true != blCheck) 
+    {
+        printf("File transfer failed\n");
+        printf("Closing connection...\n");
+    }
+
+    return blCheck;
+}
+
+//****************************.clientAddressSend.*******************************
+// Purpose : Function to send memory range to the server
+// Inputs  : pArgVector - Pointer to the file name argument
+//           lSocket - Socket descriptor
+// Outputs : None
+// Return  : true if there are no errors and false if any errors exist
+//           during function execution
+// Notes   : None
+//******************************************************************************
+static bool clientAddressSend(uint32 ulStartAddr, uint32 ulEndAddr, 
+                                int32 lSocket)
+{
+    bool blCheck = false;
+    uint32 ulFormatAddr = 0;
+
+    ulFormatAddr = htonl(ulStartAddr);
+    usleep(MIN_DELAY);
+
+    if (ERROR_CODE != send(lSocket, &ulFormatAddr, sizeof(ulFormatAddr), 0)) 
+    {
+        ulFormatAddr = htonl(ulEndAddr);
+        usleep(MIN_DELAY);
+
+        if (ERROR_CODE != send(lSocket, &ulFormatAddr, sizeof(ulFormatAddr), 0)) 
+        {
+            blCheck = true;
+        }   
+    }  
+    
+    if (true != blCheck)
+    {
+        printf("Address transfer failed\n");
+        printf("Closing connection...\n");
+    }
+
+    return blCheck;
+}
+
+//****************************.clientFileReceive.*******************************
+// Purpose : Function to receive srec file from the server
+// Inputs  : lSocket - Socket descriptor
+// Outputs : None
+// Return  : true if there are no errors and false if any errors exist
+//           during function execution
+// Notes   : None
+//******************************************************************************
+static bool clientFileReceive(int32 lSocket)
+{
+    bool blCheck = false;
+    FILE *pstFile = NULL;
+    int8 cBuffer[BUFFER_SIZE] = {0};
+    int32 lReceivedBytes = 0;
+    uint32 ulFileSize = 0;
+    uint32 ulTotalReceived = 0;
+    uint32 ulNetSize = 0;
+
+    // Receive file size from server
+    if (ERROR_CODE != recv(lSocket, &ulNetSize, sizeof(ulNetSize), 0)) 
+    {
+        ulFileSize = ntohl(ulNetSize);
+
+        pstFile = fopen(SREC_FILE_NAME, WRITE_BINARY);
+
+        if (NULL != pstFile) 
+        {
+            // Receive file data from server
+            while ((ulTotalReceived < ulFileSize) && (0 < (lReceivedBytes = 
+                recv(lSocket, cBuffer, BUFFER_SIZE, 0)))) 
+            {
+                fwrite(cBuffer, 1, lReceivedBytes, pstFile);
+                ulTotalReceived += lReceivedBytes; 
+                blCheck = true;
+            }
+
+            fclose(pstFile);
+        }
+    }
+
+    if (true != blCheck) 
+    {
+        printf("File receive failed\n");
+        printf("Closing connection...\n");
+    }
+
+    return blCheck;
+}
+
+// EOF
