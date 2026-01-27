@@ -53,3 +53,13 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# Others
+*.txt
+*.mp3
+*.mp4
+*.mkv
+*.wav
+*.vscode
+*send
+*receive
