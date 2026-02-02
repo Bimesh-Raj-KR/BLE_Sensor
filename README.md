@@ -16,6 +16,14 @@ Provide File path of the data which is put in **Sender SHM** to Sender, receiver
 Ensure all three of them receive the same path for one particular transimission    
 **Delete** the SHMs after operations and checkings are done  
 
+Use this command to verify SHMs existence
+
+ipcs -m
+
+Use this command to clear any unwanted SHM
+
+ipcrm -m <shmid>
+
 ## Building with Make
 
 ### make send

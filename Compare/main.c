@@ -66,6 +66,10 @@ int main(int32 lArgCount, int8* pcArgVector[])
             }
         }
     }
+    else
+    {
+        printf("Enter valid file path\n");
+    }
 
     return 0;
 }
