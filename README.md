@@ -22,7 +22,7 @@ ipcs -m
 
 Use this command to clear any unwanted SHM
 
-ipcrm -m <shmid>
+ipcrm -m "<shmid>"
 
 ## Building with Make
 
